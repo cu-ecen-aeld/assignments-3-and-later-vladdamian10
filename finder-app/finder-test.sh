@@ -49,10 +49,10 @@ then
 	fi
 fi
 
-# activate C build
-echo "Removing the old writer utility and compiling as a native application"
-make clean
-make
+# assignment-3-part-1: Remove the make step
+#echo "Removing the old writer utility and compiling as a native application"
+#make clean
+#make
 
 for i in $( seq 1 $NUMFILES)
 do
