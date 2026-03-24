@@ -1,4 +1,10 @@
 #include "systemcalls.h"
+#include "stdlib.h"
+#include "sys/wait.h"
+#include "sys/types.h"
+#include "unistd.h"
+#include "errno.h"
+#include "string.h"
 
 /**
  * @param cmd the command to execute with system()
@@ -11,13 +17,17 @@ bool do_system(const char *cmd)
 {
 
 /*
- * TODO  add your code here
+ * Done: add your code here
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    if (system(cmd) == 0) {
+	    return true;
+    }
+    else {
+	    return false;
+    }
 }
 
 /**
@@ -47,10 +57,10 @@ bool do_exec(int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    // command[count] = command[count];
 
 /*
- * TODO:
+ * Done:
  *   Execute a system command by calling fork, execv(),
  *   and wait instead of system (see LSP page 161).
  *   Use the command[0] as the full path to the command to execute
@@ -58,9 +68,35 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    bool status = true;
+    pid_t pid;
+    pid = fork();
+   
+    if (pid == -1) {
+	    return status = false;
+    }
+    else if (pid == 0) {
+        int ret;
+        ret = execv (command[0], command);
+        if (ret == -1) {
+            printf("ret = %d\texecv errno = %s\n", ret, strerror(errno));   
+            return status = false;
+       }
+    }
+    
+    int st;
+    pid = wait(&st);
+    if (pid == -1) {
+        return status = false;
+    }
+    /* inspired from:
+     * https://github.com/cu-ecen-aeld/assignments-3-and-later-mer0vech/blob/main/examples/systemcalls/systemcalls.c#L82C6-L82C55
+    */
+    if(!WIFEXITED(st) || WEXITSTATUS(st) != 0) {
+        return status = false;
+    }
 
     va_end(args);
-
     return true;
 }
 
