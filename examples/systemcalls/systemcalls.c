@@ -1,7 +1,9 @@
 #include "systemcalls.h"
 #include "stdlib.h"
-#include "sys/wait.h"
-#include "sys/types.h"
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "unistd.h"
 #include "errno.h"
 #include "string.h"
@@ -79,7 +81,6 @@ bool do_exec(int count, ...)
         int ret;
         ret = execv (command[0], command);
         if (ret == -1) {
-            printf("ret = %d\texecv errno = %s\n", ret, strerror(errno));   
             return status = false;
        }
     }
@@ -128,8 +129,48 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+    bool status = true;
+
+    int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (fd < 0) {
+        status = false;
+    }
+
+    pid_t pid;
+    pid = fork();
+   
+    if (pid == -1) {
+            status = false;
+    }   
+    else if (pid == 0) {
+        if(dup2(fd, 1) < 0) {
+            status = false;
+        }
+        close(fd);
+        
+        int ret;
+        ret = execv (command[0], command);
+        if (ret == -1) {
+            printf("ret = %d\texecv errno = %s\n", ret, strerror(errno));   
+            status = false;
+       }   
+    }   
+        
+    int st; 
+    pid = wait(&st);
+    if (pid == -1) {
+        status = false;
+    }   
+    /* inspired from:
+     * https://github.com/cu-ecen-aeld/assignments-3-and-later-mer0vech/blob/main/examples/systemcalls/systemcalls.c#L82C6-L82C55
+    */
+    if(!WIFEXITED(st) || WEXITSTATUS(st) != 0) {
+        status = false;
+    }   
+
+    close(fd);
 
     va_end(args);
 
-    return true;
+    return status;
 }
