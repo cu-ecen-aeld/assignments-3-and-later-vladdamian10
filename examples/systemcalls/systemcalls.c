@@ -78,11 +78,11 @@ bool do_exec(int count, ...)
 	    return status = false;
     }
     else if (pid == 0) {
-        int ret;
-        ret = execv (command[0], command);
-        if (ret == -1) {
-            return status = false;
-       }
+        /* inspired from:
+         * https://github.com/cu-ecen-aeld/assignments-3-and-later-mer0vech/blob/main/examples/systemcalls/systemcalls.c#L82C6-L82C55
+        */
+        execv (command[0], command);
+        exit(EXIT_FAILURE);
     }
     
     int st;
@@ -123,7 +123,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
 
 /*
- * TODO
+ * Done
  *   Call execv, but first using https://stackoverflow.com/a/13784315/1446624 as a refernce,
  *   redirect standard out to a file specified by outputfile.
  *   The rest of the behaviour is same as do_exec()
@@ -148,12 +148,8 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         }
         close(fd);
         
-        int ret;
-        ret = execv (command[0], command);
-        if (ret == -1) {
-            printf("ret = %d\texecv errno = %s\n", ret, strerror(errno));   
-            status = false;
-       }   
+        execv (command[0], command);
+        exit(EXIT_FAILURE);
     }   
         
     int st; 
