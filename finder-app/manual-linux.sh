@@ -118,8 +118,9 @@ $(sed -i 's/\.\.\/conf\/assignment.txt/conf\/assignment.txt/g' "${OUTDIR}/rootfs
 
 # Done: Chown the root directory
 cd "${OUTDIR}/rootfs"
-find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
+sudo chown -R root $OUTDIR/rootfs
 
 # Done: Create initramfs.cpio.gz
+find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
 gzip -f ${OUTDIR}/initramfs.cpio
 
