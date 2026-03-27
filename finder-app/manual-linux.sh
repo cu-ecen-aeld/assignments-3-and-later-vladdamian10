@@ -44,6 +44,7 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
 fi
 
 echo "Adding the Image in outdir"
+cp "${OUTDIR}/linux-stable/arch/arm64/boot/Image" "${OUTDIR}"
 
 echo "Creating the staging directory for the root filesystem"
 cd "$OUTDIR"
@@ -96,8 +97,8 @@ else
 fi
 
 # Done: Make device nodes
-sudo -i mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
-sudo -i mknod -m 666 ${OUTDIR}/rootfs/dev/console c 5 1
+sudo  mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
+sudo  mknod -m 666 ${OUTDIR}/rootfs/dev/console c 5 1
 
 # Done: Clean and build the writer utility
 cd "${FINDER_APP_DIR}"
@@ -108,7 +109,7 @@ make CROSS_COMPILE=aarch64-none-linux-gnu- all
 # on the target rootfs
 cp ${FINDER_APP_DIR}/finder.sh "${OUTDIR}/rootfs/home" 
 cp ${FINDER_APP_DIR}/finder-test.sh "${OUTDIR}/rootfs/home"
-cp ${FINDER_APP_DIR}/conf/* "${OUTDIR}/rootfs/home"
+cp -r $(realpath ${FINDER_APP_DIR}/conf) "${OUTDIR}/rootfs/home"
 cp ${FINDER_APP_DIR}/writer "${OUTDIR}/rootfs/home" 
 cp ${FINDER_APP_DIR}/autorun-qemu.sh "${OUTDIR}/rootfs/home" 
 
