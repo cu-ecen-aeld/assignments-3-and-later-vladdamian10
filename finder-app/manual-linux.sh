@@ -85,16 +85,16 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # Done: Add library dependencies to rootfs
-TOOLCHAIN_PATH=$(find ~/ -type d -iname "arm-gnu-toolchain-*")
-if [[ "${TOOLCHAIN_PATH}"x == ""x ]]; then
-  echo "Error: Path to toolchain is not found."
-else
-  # Would be fancier to find the files, instead of hardcoding the source path.
-  cp ${TOOLCHAIN_PATH}/aarch64-none-linux-gnu/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib/
-  cp ${TOOLCHAIN_PATH}/aarch64-none-linux-gnu/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64/
-  cp ${TOOLCHAIN_PATH}/aarch64-none-linux-gnu/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64/
-  cp ${TOOLCHAIN_PATH}/aarch64-none-linux-gnu/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64/
-fi
+  # Using sysroot makes sure that the dependencies are found both when running
+  # manual and when using the git-runner.
+  # See  https://www.coursera.org/learn/linux-system-programming-introduction-to-buildroot/discussions/weeks/2/threads/ulHq06OREe67HQrbxnFcjw
+  # Adapted the code inspired by:
+  # https://github.com/cu-ecen-aeld/assignments-3-and-later-siva7699/commit/3a10a72b75c74f55d9c4338291e83019a394c1b9#diff-e01e2146bf6f13636a134d3ce13983df0085950949a7b0a3868c3a8d9e0f8eafR87
+  SYS_ROOT=$(aarch64-none-linux-gnu-gcc -print-sysroot)
+  cp ${SYS_ROOT}/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib/
+  cp ${SYS_ROOT}/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64/
+  cp ${SYS_ROOT}/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64/
+  cp ${SYS_ROOT}/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64/
 
 # Done: Make device nodes
 sudo  mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
