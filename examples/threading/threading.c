@@ -58,6 +58,35 @@ bool start_thread_obtaining_mutex(pthread_t *thread, pthread_mutex_t *mutex,int 
      *
      * See implementation details in threading.h file comment block
      */
-    return false;
+
+    /* allocate thread_data */
+    struct thread_data *td = NULL;
+    td = (struct thread_data*) malloc(sizeof(struct thread_data));
+    if (td == NULL) {
+        printf("Memory allocation for thread_data failed.\n");
+        return false;
+    }
+    else {
+        td->wait_to_obtain_ms = wait_to_obtain_ms;
+        td->wait_to_release_ms = wait_to_release_ms;
+        td->mutex = mutex;
+        td->thread_complete_success = false;
+
+        int rc = pthread_create(
+                  thread,       /* pthread_t *thread */
+                  NULL,         /* const pthread_attr_t *attr */
+                  threadfunc,  /* typeof(void *(void *)) *start_routine, */
+                  td            /* void  *arg */
+              );
+        if (rc != 0) {
+             printf("pthread_create failed with error %d creating thread\n", rc);
+             free(td);
+             td = NULL;
+             return false;
+        }
+        else {
+            return true;
+        }
+    }
 }
 
