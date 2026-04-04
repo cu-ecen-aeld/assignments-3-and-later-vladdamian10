@@ -5,10 +5,34 @@
 set -e
 set -u
 
+SCRIPT_DIR=$(cd $(dirname $0))
+CONF_DIR="/etc/finder-app"
+
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
 WRITEDIR=/tmp/aeld-data
-username=$(cat conf/username.txt)
+username=$(cat ${CONF_DIR}/conf/username.txt)
+
+# Dependencies sanity checks
+WRITER=$(which writer)
+if [ "$WRITER"x == ""x ]; then
+    echo "writer is not in PATH."
+    exit 1
+fi
+if [ ! -x ${WRITER} ]; then
+    echo "The ${WRITER} is not an executable file."
+    exit 1
+fi
+
+FINDER=$(which finder.sh)
+if [ "${FINDER}"x == ""x ]; then
+    echo "finder.sh is not in PATH"
+    exit 1
+fi
+if [ ! -f "${FINDER} ]; then
+    echo "The ${FINDER} is not a file"
+    exit 1
+fi
 
 if [ $# -lt 3 ]
 then
@@ -32,7 +56,7 @@ echo "Writing ${NUMFILES} files containing string ${WRITESTR} to ${WRITEDIR}"
 rm -rf "${WRITEDIR}"
 
 # create $WRITEDIR if not assignment1
-assignment=`cat ../conf/assignment.txt`
+assignment=`cat ${CONF_DIR}/conf/assignment.txt`
 
 if [ $assignment != 'assignment1' ]
 then
@@ -56,10 +80,13 @@ fi
 
 for i in $( seq 1 $NUMFILES)
 do
-	./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
+	"${WRITER}" "$WRITEDIR/${username}$i.txt" "$WRITESTR"
 done
 
-OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
+OUTPUTSTRING=$("${FINDER}" "$WRITEDIR" "$WRITESTR")
+
+# Task 4c: Modify your finder-test.sh script to write a file with output of the finder command to /tmp/assignment4-result.txt
+echo "${OUTPUTSTRING}" > /tmp/assignment4-result.txt
 
 # remove temporary directories
 rm -rf /tmp/aeld-data
