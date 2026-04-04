@@ -29,7 +29,7 @@ if [ "${FINDER}"x == ""x ]; then
     echo "finder.sh is not in PATH"
     exit 1
 fi
-if [ ! -f "${FINDER} ]; then
+if [ ! -f "${FINDER}" ]; then
     echo "The ${FINDER} is not a file"
     exit 1
 fi
