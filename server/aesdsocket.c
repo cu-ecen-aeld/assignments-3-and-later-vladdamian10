@@ -11,6 +11,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <netinet/in.h>
+#include<arpa/inet.h>
 
 #define PORT_NO 9000
 #define BACKLOG 10
@@ -25,6 +27,8 @@ static void signal_handler(int signal_number);
 static void init_sigaction(struct sigaction* action, void (*sig_handler)(int));
 static bool register_sigaction(struct sigaction* action);
 #endif
+// Definition extracted from Beej's guide to network programming, for printing the IP address of the client.
+void *get_in_addr(struct sockaddr *sa);
 
 int main(int argc, char *argv[]) {
     // signal related data
@@ -41,6 +45,7 @@ int main(int argc, char *argv[]) {
     socklen_t addr_size;    
     struct addrinfo hints;
     struct addrinfo *servinfo;
+    char s[INET6_ADDRSTRLEN];
 
     // signal related data
     init_sigaction(&new_action, signal_handler);
@@ -112,6 +117,13 @@ int main(int argc, char *argv[]) {
                 perror("accept");
                 continue;
             }
+            else {
+                inet_ntop(their_addr.ss_family,
+                    get_in_addr((struct sockaddr *)&their_addr),
+                    s, sizeof(s));
+                syslog(LOG_USER, "Accepted connection from %s", s);
+            }
+
             // always reset buffer before reading again.
             memset(writestr, 0, BUFF_LEN_BYTES);
 
@@ -149,6 +161,12 @@ int main(int argc, char *argv[]) {
             if (close(new_sockfd) == -1) {
                 perror("close socket");
                 break;
+            }
+            else {
+                inet_ntop(their_addr.ss_family,
+                    get_in_addr((struct sockaddr *)&their_addr),
+                    s, sizeof(s));
+                syslog(LOG_USER, "Closed connection from %s", s);
             }
         }
         else {
@@ -219,4 +237,14 @@ static void signal_handler(int signal_number) {
         caught_sigterm = 1;
     }
     errno = saved_errno;
+}
+
+// get sockaddr, IPv4 or IPv6:
+void *get_in_addr(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET) {
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
