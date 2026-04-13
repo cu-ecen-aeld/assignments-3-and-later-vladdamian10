@@ -12,6 +12,11 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
+#define PORT_NO 9000
+#define BACKLOG 10
+// Number of bytes used to store the data sent from remote, via sockets
+#define BUFF_LEN_BYTES 128
+
 bool caught_sigint = false;
 bool caught_sigterm = false;
 
@@ -28,12 +33,56 @@ int main(int argc, char *argv[]) {
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
     int fd;
+    // socket related data
+    int status;
+    int sockfd;
+    struct addrinfo hints;
+    struct addrinfo *servinfo;
 
+    // signal related data
     init_sigaction(&new_action, signal_handler);
     success = register_sigaction(&new_action);
 
-    /* Open/Create file */
+    // ------- socket related init ----- //
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM; // TCP stream socket
+    hints.ai_flags = AI_PASSIVE; // fill in my IP for me
 
+    // Load addrinfo structs.
+    if ((status = getaddrinfo(NULL, "9000", &hints, &servinfo)) != 0) {
+        fprintf(stderr, "gai error: %s\n", gai_strerror(status));
+        return -1;
+    }
+
+    // Create socket
+    if ((sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1) {
+        perror ("socket");
+        return -1;
+    }
+
+    // bind
+    if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
+        close(sockfd);
+        perror("bind");
+        return -1;
+    }
+
+    int yes=1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        close(sockfd);
+        perror("setsockopt");
+        return -1;
+    }
+
+    // Listen for a connection
+    if (listen(sockfd, BACKLOG) == -1) {
+        perror("socket listen");
+        return -1;
+    }
+
+    // ------- file related init ----- //
+    /* Open/Create file */
     fd = open(filename,
           O_WRONLY | O_CREAT | O_APPEND, /* flags */
           S_IWUSR | S_IRUSR | S_IWGRP | S_IROTH /* chmode*/
@@ -71,6 +120,14 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    // close socket
+    if (close (sockfd) == -1) {
+        perror("close socket");
+        return -1;
+    }
+    // Deallocate addrinfo.
+    freeaddrinfo(servinfo);
+
     return 0;
 }
 
