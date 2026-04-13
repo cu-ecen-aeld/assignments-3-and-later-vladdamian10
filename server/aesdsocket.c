@@ -207,11 +207,9 @@ static void signal_handler(int signal_number) {
 
     if (signal_number == SIGINT) {
         caught_sigint = 1;
-        write(STDERR_FILENO, msg_int, sizeof(msg_int)-1);
     }
     else if (signal_number == SIGTERM) {
         caught_sigterm = 1;
-        write(STDERR_FILENO, msg_term, sizeof(msg_term)-1);
     }
     errno = saved_errno;
 }
