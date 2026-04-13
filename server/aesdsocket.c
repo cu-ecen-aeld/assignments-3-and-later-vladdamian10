@@ -151,16 +151,18 @@ int main(int argc, char *argv[]) {
                     return -1;
                 }
                 close(fd);
+#if 0                
                 if (filename != NULL) {
                     remove(filename);
                     filename = NULL;
                 }
+#endif                    
                 break;
             }
         }
     }
     // close socket
-    if (close (sockfd) == -1) {
+    if (close(sockfd) == -1) {
         perror("close socket");
         return -1;
     }
