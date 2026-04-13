@@ -211,8 +211,6 @@ static bool register_sigaction(struct sigaction* action) {
 
 static void signal_handler(int signal_number) {
     int saved_errno = errno;
-    const char msg_int[] = "Received SIGINT\n";
-    const char msg_term[] = "Received SIGTERM\n";
 
     if (signal_number == SIGINT) {
         caught_sigint = 1;
