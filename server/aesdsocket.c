@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -5,6 +6,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <netdb.h>
+#include <syslog.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
 
 bool caught_sigint = false;
 bool caught_sigterm = false;
