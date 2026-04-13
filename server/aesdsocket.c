@@ -105,6 +105,10 @@ int main(int argc, char *argv[]) {
             addr_size = sizeof(their_addr);
             new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
             if (new_sockfd == -1) {
+                if (errno == EINTR) {
+                    // hack. bad coding idea, but I have no idea how to catch sigint. Most probably my design is flawed.
+                    caught_sigint = 1;
+                }
                 perror("accept");
                 continue;
             }
