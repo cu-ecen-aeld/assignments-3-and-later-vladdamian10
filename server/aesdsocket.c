@@ -108,7 +108,35 @@ int main(int argc, char *argv[]) {
     printf("Waiting forever for a signal\n");
     while(1) {
         if (!caught_sigint && !caught_sigterm) {
-            pause();
+            // pause();
+            // always reset buffer before reading again.
+            memset(writestr, 0, BUFF_LEN_BYTES);
+
+            ssize_t num_bytes;
+            num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
+            if (num_bytes == -1) {
+                perror("recv");
+                return -1;
+            }
+            else if (num_bytes == 0) {
+                // TODO: the remote side has closed the connection on the server.
+                // Should I exit?
+            }
+            else {
+                // read through the buffer. If you find "\n", then write to the file.
+                int i;
+                for (i=0; i<num_bytes;i++) {
+                    if (writestr[i] == '\n') {
+                        // Every newline character in the string should mean a packet complete. I.e. write to fd
+                        // only after having a complete packet.
+
+                        if (write(fd, writestr, num_bytes) == -1) {
+                            perror("write");
+                            return -1;
+                        }
+                    }
+                }
+            }
         }
         else {
             if (success) {
