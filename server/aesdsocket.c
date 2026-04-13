@@ -157,6 +157,25 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+            // TODO: Must look for a better place for this call.
+            // Then send the buffer back to the client via the socket.
+            lseek(fd, 0, SEEK_SET);
+            char* readstr = (char*)malloc(BUFF_LEN_BYTES);
+            ssize_t num_bytes_read;
+            while ((num_bytes_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
+                ssize_t num_bytes_sent;
+                num_bytes_sent = send(new_sockfd, readstr, num_bytes_read, 0);
+                if (num_bytes_sent == -1) {
+                    perror("send");
+                    return -1;
+                }
+            }
+            if (num_bytes_read == -1) {
+                perror("read");
+                return -1;
+            }
+            free(readstr);
+
             /* close the new socket for this connection */
             if (close(new_sockfd) == -1) {
                 perror("close socket");
