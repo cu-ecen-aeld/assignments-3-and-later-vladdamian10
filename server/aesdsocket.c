@@ -114,6 +114,11 @@ int main(int argc, char *argv[]) {
             ssize_t num_bytes;
             num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
             if (num_bytes == -1) {
+                // if (errno == EINTR) {
+                //     // interrupted by signal → break out to main loop
+                //     close(new_sockfd);
+                //     continue;
+                // }
                 perror("recv");
                 return -1;
             }
