@@ -35,7 +35,9 @@ int main(int argc, char *argv[]) {
     int fd;
     // socket related data
     int status;
-    int sockfd;
+    int sockfd, new_sockfd;
+    struct sockaddr_storage their_addr;
+    socklen_t addr_size;    
     struct addrinfo hints;
     struct addrinfo *servinfo;
 
@@ -92,6 +94,15 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    // TODO: This must be used in the while(1) loop.
+    // Accept incoming connection:
+    addr_size = sizeof(their_addr);
+    new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
+    if (new_sockfd == -1) {
+        perror("accept");
+        return -1;
+    }
+
     char* writestr="Caught nothing.\n";
 
     printf("Waiting forever for a signal\n");
@@ -125,6 +136,12 @@ int main(int argc, char *argv[]) {
         perror("close socket");
         return -1;
     }
+    /* close the new socket */
+    if (close(new_sockfd) == -1) {
+        perror("close socket");
+        return -1;
+    }
+        
     // Deallocate addrinfo.
     freeaddrinfo(servinfo);
 
