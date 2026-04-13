@@ -205,10 +205,17 @@ static bool register_sigaction(struct sigaction* action) {
 }
 
 static void signal_handler(int signal_number) {
+    int saved_errno = errno;
+    const char msg_int[] = "Received SIGINT\n";
+    const char msg_term[] = "Received SIGTERM\n";
+
     if (signal_number == SIGINT) {
         caught_sigint = 1;
+        write(STDERR_FILENO, msg_int, sizeof(msg_int)-1);
     }
     else if (signal_number == SIGTERM) {
         caught_sigterm = 1;
+        write(STDERR_FILENO, msg_term, sizeof(msg_term)-1);
     }
+    errno = saved_errno;
 }
