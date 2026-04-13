@@ -187,6 +187,8 @@ int main(int argc, char *argv[]) {
 static void init_sigaction(struct sigaction* action, void (*sig_handler)(int)) {
     memset(action, 0, sizeof(*action));
     action->sa_handler = sig_handler;
+    action->sa_flags = 0;
+    sigemptyset(&action->sa_mask);
 }
 
 static bool register_sigaction(struct sigaction* action) {
