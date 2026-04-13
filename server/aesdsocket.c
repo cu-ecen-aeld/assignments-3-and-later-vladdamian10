@@ -16,15 +16,19 @@ static bool register_sigaction(struct sigaction* action);
 #endif
 
 int main(int argc, char *argv[]) {
+    // signal related data
     bool success = true;
-    
     struct sigaction new_action;
+    // file related data
+    char *filename = "/var/tmp/aesdsocketdata";
+    int fd;
+
     init_sigaction(&new_action, signal_handler);
     success = register_sigaction(&new_action);
 
     /* Open/Create file */
-    char *filename = "/var/tmp/aesdsocketdata";
-    int fd = open(filename,
+
+    fd = open(filename,
           O_WRONLY | O_CREAT | O_APPEND, /* flags */
           S_IWUSR | S_IRUSR | S_IWGRP | S_IROTH /* chmode*/
     );
