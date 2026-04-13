@@ -96,19 +96,15 @@ int main(int argc, char *argv[]) {
     }
     writestr=(char*)malloc(BUFF_LEN_BYTES);
 
-    // TODO: This must be used in the while(1) loop.
-    // Accept incoming connection:
-    addr_size = sizeof(their_addr);
-    new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
-    if (new_sockfd == -1) {
-        perror("accept");
-        return -1;
-    }
-
     printf("Waiting forever for a signal\n");
     while(1) {
         if (!caught_sigint && !caught_sigterm) {
-            // pause();
+            addr_size = sizeof(their_addr);
+            new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
+            if (new_sockfd == -1) {
+                perror("accept");
+                continue;
+            }
             // always reset buffer before reading again.
             memset(writestr, 0, BUFF_LEN_BYTES);
 
@@ -136,6 +132,11 @@ int main(int argc, char *argv[]) {
                         }
                     }
                 }
+            }
+            /* close the new socket for this connection */
+            if (close(new_sockfd) == -1) {
+                perror("close socket");
+                break;
             }
         }
         else {
@@ -166,12 +167,6 @@ int main(int argc, char *argv[]) {
         perror("close socket");
         return -1;
     }
-    /* close the new socket */
-    if (close(new_sockfd) == -1) {
-        perror("close socket");
-        return -1;
-    }
-        
     // Deallocate addrinfo.
     freeaddrinfo(servinfo);
 
