@@ -197,7 +197,7 @@ static bool register_sigaction(struct sigaction* action) {
         printf("Error %d (%s) registering for SIGTERM", errno, strerror(errno));
         success = false;
     }
-    if (sigaction(SIGINT, action, NULL)) {
+    if (sigaction(SIGINT, action, NULL) != 0) {
         printf("Error %d (%s) registering for SIGINT", errno, strerror(errno));
         success = false;
     }
