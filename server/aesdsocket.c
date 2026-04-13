@@ -96,6 +96,9 @@ int main(int argc, char *argv[]) {
     }
     writestr=(char*)malloc(BUFF_LEN_BYTES);
 
+    // log to message to syslog
+    openlog(NULL, 0, LOG_USER);
+
     printf("Waiting forever for a signal\n");
     while(1) {
         if (!caught_sigint && !caught_sigterm) {
@@ -142,14 +145,10 @@ int main(int argc, char *argv[]) {
         else {
             if (success) {
                 if (caught_sigint) {
-                    snprintf(writestr, BUFF_LEN_BYTES, "Caught SIGINT.\n");
+                    syslog(LOG_DEBUG, "Caught SIGINT");
                 }
                 if (caught_sigterm) {
-                    snprintf(writestr, BUFF_LEN_BYTES, "Caught SIGTERM.\n");
-                }
-                if (write(fd, writestr, strlen(writestr)) == -1) {
-                    perror("write");
-                    return -1;
+                    syslog(LOG_DEBUG, "Caught SIGTERM");
                 }
                 close(fd);
 #if 0                
@@ -175,6 +174,8 @@ int main(int argc, char *argv[]) {
         free(writestr);
         writestr = NULL;
     }
+
+    closelog();
 
     return 0;
 }
