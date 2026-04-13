@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     // ------- file related init ----- //
     /* Open/Create file */
     fd = open(filename,
-          O_WRONLY | O_CREAT | O_APPEND, /* flags */
+          O_RDWR | O_CREAT | O_APPEND, /* flags */
           S_IWUSR | S_IRUSR | S_IWGRP | S_IROTH /* chmode*/
     );
     if (fd == -1) { 
