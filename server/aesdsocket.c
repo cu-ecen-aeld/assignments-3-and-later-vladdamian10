@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
     int fd;
+    char* writestr;
     // socket related data
     int status;
     int sockfd, new_sockfd;
@@ -93,6 +94,7 @@ int main(int argc, char *argv[]) {
         perror("open file");
         return -1;
     }
+    writestr=(char*)malloc(BUFF_LEN_BYTES);
 
     // TODO: This must be used in the while(1) loop.
     // Accept incoming connection:
@@ -102,8 +104,6 @@ int main(int argc, char *argv[]) {
         perror("accept");
         return -1;
     }
-
-    char* writestr="Caught nothing.\n";
 
     printf("Waiting forever for a signal\n");
     while(1) {
@@ -144,6 +144,12 @@ int main(int argc, char *argv[]) {
         
     // Deallocate addrinfo.
     freeaddrinfo(servinfo);
+
+    // Deallocate writestr buffer
+    if (writestr != NULL) {
+        free(writestr);
+        writestr = NULL;
+    }
 
     return 0;
 }
