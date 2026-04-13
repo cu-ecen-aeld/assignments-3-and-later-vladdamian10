@@ -17,8 +17,8 @@
 // Number of bytes used to store the data sent from remote, via sockets
 #define BUFF_LEN_BYTES 128
 
-bool caught_sigint = false;
-bool caught_sigterm = false;
+volatile sig_atomic_t caught_sigint = 0;
+volatile sig_atomic_t caught_sigterm = 0;
 
 static void signal_handler(int signal_number);
 #if 1
@@ -204,9 +204,9 @@ static bool register_sigaction(struct sigaction* action) {
 
 static void signal_handler(int signal_number) {
     if (signal_number == SIGINT) {
-        caught_sigint = true;
+        caught_sigint = 1;
     }
     else if (signal_number == SIGTERM) {
-        caught_sigterm = true;
+        caught_sigterm = 1;
     }
 }
