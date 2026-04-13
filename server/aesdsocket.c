@@ -141,10 +141,10 @@ int main(int argc, char *argv[]) {
         else {
             if (success) {
                 if (caught_sigint) {
-                    writestr="Caught SIGINT.\n";
+                    snprintf(writestr, BUFF_LEN_BYTES, "Caught SIGINT.\n");
                 }
                 if (caught_sigterm) {
-                    writestr="Caught SIGTERM.\n";
+                    snprintf(writestr, BUFF_LEN_BYTES, "Caught SIGTERM.\n");
                 }
                 if (write(fd, writestr, strlen(writestr)) == -1) {
                     perror("write");
