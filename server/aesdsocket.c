@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 
     printf("Waiting forever for a signal\n");
     while(1) {
-        if (!caught_sigint && !caught_sigterm) {
+        if (!(caught_sigint || caught_sigterm)) {
             addr_size = sizeof(their_addr);
             new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
             if (new_sockfd == -1) {
