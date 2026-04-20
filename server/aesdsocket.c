@@ -128,7 +128,24 @@ int main(int argc, char *argv[]) {
             memset(writestr, 0, BUFF_LEN_BYTES);
 
             ssize_t num_bytes;
-            num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
+            while ((num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0)) > 0) {
+                // Keep reading
+                // read through the buffer. If you find "\n", then write to the file.
+                int i;
+                for (i=0; i<num_bytes;i++) {
+                    if (writestr[i] == '\n') {
+                        // Every newline character in the string should mean a packet complete. I.e. write to fd
+                        // only after having a complete packet.
+
+                        if (write(fd, writestr, num_bytes) == -1) {
+                            perror("write");
+                            return -1;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
             if (num_bytes == -1) {
                 // if (errno == EINTR) {
                 //     // interrupted by signal → break out to main loop
@@ -141,21 +158,6 @@ int main(int argc, char *argv[]) {
             else if (num_bytes == 0) {
                 // TODO: the remote side has closed the connection on the server.
                 // Should I exit?
-            }
-            else {
-                // read through the buffer. If you find "\n", then write to the file.
-                int i;
-                for (i=0; i<num_bytes;i++) {
-                    if (writestr[i] == '\n') {
-                        // Every newline character in the string should mean a packet complete. I.e. write to fd
-                        // only after having a complete packet.
-
-                        if (write(fd, writestr, num_bytes) == -1) {
-                            perror("write");
-                            return -1;
-                        }
-                    }
-                }
             }
             // TODO: Must look for a better place for this call.
             // Then send the buffer back to the client via the socket.
