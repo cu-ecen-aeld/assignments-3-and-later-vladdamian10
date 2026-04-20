@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
                     syslog(LOG_DEBUG, "Caught SIGTERM");
                 }
                 close(fd);
-#if 0                
+#if 1
                 if (filename != NULL) {
                     remove(filename);
                     filename = NULL;
