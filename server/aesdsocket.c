@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // Create socket
+    // b. Opens a stream socket bound to port 9000, failing and returning -1 if any of the socket connection steps fail.
     if ((sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1) {
         perror ("socket");
         return -1;
@@ -84,14 +84,14 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // Listen for a connection
+    // c. Listens for and a connection.
     if (listen(sockfd, BACKLOG) == -1) {
         perror("socket listen");
         return -1;
     }
 
     // ------- file related init ----- //
-    /* Open/Create file */
+    // e. create the file if it doesn’t exist.
     fd = open(filename,
           O_RDWR | O_CREAT | O_APPEND, /* flags */
           S_IWUSR | S_IRUSR | S_IWGRP | S_IROTH /* chmode*/
@@ -106,8 +106,10 @@ int main(int argc, char *argv[]) {
     openlog(NULL, 0, LOG_USER);
 
     printf("Waiting forever for a signal\n");
+    // h. Restarts accepting connections from new clients forever in a loop until SIGINT or SIGTERM is received.
     while(!(caught_sigint || caught_sigterm)) {
             addr_size = sizeof(their_addr);
+            // c. Accepts a connection.
             new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
             if (new_sockfd == -1) {
                 if ((errno == EINTR) || (errno == EAGAIN)) {
@@ -123,6 +125,8 @@ int main(int argc, char *argv[]) {
                 inet_ntop(their_addr.ss_family,
                     get_in_addr((struct sockaddr *)&their_addr),
                     s, sizeof(s));
+                // d. Logs message to the syslog “Accepted connection from xxx” where XXXX
+                // is the IP address of the connected client.                    
                 syslog(LOG_USER, "Accepted connection from %s", s);
             }
 
@@ -134,6 +138,7 @@ int main(int argc, char *argv[]) {
             ssize_t nb_read;
             ssize_t nb_sent;            
             while (do_receive) {
+                // e. Receives data over the connection and appends to file.
                 nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
                 if (nb_rcvd == -1) {
                     perror("recv");
@@ -142,14 +147,15 @@ int main(int argc, char *argv[]) {
                 else if (nb_rcvd == 0) {
                     do_receive = false;
                 }
-
-                // read through the buffer. If you find "\n", then write to the file.
+                // e. use a newline to separate data packets received.
                 if (writestr[nb_rcvd-1] == '\n') {
+                        // e. each newline should result in an append to the /var/tmp/aesdsocketdata file
                         if (write(fd, writestr, nb_rcvd) == -1) {
                             perror("write");
                             do_receive = false;
                         } else {
-                            // Then send the buffer back to the client via the socket.
+                            // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
+                            //  the received data packet completes.
                             lseek(fd, 0, SEEK_SET);
                             char* readstr = (char*)malloc(BUFF_LEN_BYTES);
                             while ((nb_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
@@ -178,12 +184,16 @@ int main(int argc, char *argv[]) {
                 inet_ntop(their_addr.ss_family,
                     get_in_addr((struct sockaddr *)&their_addr),
                     s, sizeof(s));
+                // g. Logs message to the syslog “Closed connection from XXX” where XXX is the IP address of the connected client.
                 syslog(LOG_USER, "Closed connection from %s", s);
             }
     }
 
+    // i. Logs message to the syslog “Caught signal, exiting” when SIGINT or SIGTERM is received.
     log_sigaction();
 
+    // i. Gracefully exits when SIGINT or SIGTERM is received, completing any open connection operations,
+    //    closing any open sockets, and deleting the file /var/tmp/aesdsocketdata.
     close(fd);
 #if 1
     if (filename != NULL) {
