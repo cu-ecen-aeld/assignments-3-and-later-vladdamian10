@@ -48,6 +48,20 @@ int main(int argc, char *argv[]) {
     struct addrinfo *servinfo;
     char s[INET6_ADDRSTRLEN];
 
+    bool run_as_daemon = false;
+    // Parse command line arguments
+    if (argc > 2) {
+        fprintf(stderr, "Usage: %s [-d]\n", argv[0]);
+        return -1;
+    }
+    if (argc == 2 && strcmp(argv[1], "-d") == 0) {
+            run_as_daemon = true;
+            syslog(LOG_USER, "Running as daemon");
+        }
+        else {
+            syslog(LOG_USER, "Running in foreground.");
+        }
+
     // signal related data
     init_sigaction(&new_action, signal_handler);
     register_sigaction(&new_action);
