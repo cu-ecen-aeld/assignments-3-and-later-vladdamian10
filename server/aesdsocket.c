@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
             ssize_t nb_rcvd;
             ssize_t nb_read;
             ssize_t nb_sent;            
-            while (do_receive || !(caught_sigint || caught_sigterm)) {
+            while (do_receive && !(caught_sigint || caught_sigterm)) {
                 // e. Receives data over the connection and appends to file.
                 nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
                 if (nb_rcvd == -1) {
