@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include<arpa/inet.h>
+#include <fcntl.h>
 
 #define PORT_NO 9000
 #define BACKLOG 10
@@ -130,6 +131,19 @@ int main(int argc, char *argv[]) {
                 syslog(LOG_USER, "Accepted connection from %s", s);
             }
 
+            // make new_sockfd non-blocking
+            // Read the current descriptor flags
+            int flags = fcntl(new_sockfd, F_GETFL, 0);
+            if (flags == -1) {
+                perror("fcntl F_GETFL");
+                break;
+            }
+            // and add O_NONBLOCK to make it non-blocking
+            if (fcntl(new_sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+                perror("fcntl F_SETFL");
+                // handle error
+            }
+
             // always reset buffer before reading again.
             memset(writestr, 0, BUFF_LEN_BYTES);
 
@@ -141,6 +155,10 @@ int main(int argc, char *argv[]) {
                 // e. Receives data over the connection and appends to file.
                 nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
                 if (nb_rcvd == -1) {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        // no data available, try again later.
+                        continue;
+                    }
                     perror("recv");
                     do_receive = false;
                 }
