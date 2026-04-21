@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
                                 do_receive = false;
                             }
                             free(readstr);
-                            do_receive = false;
+                            //do_receive = false;
                         }
                 }
             }
