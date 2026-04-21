@@ -18,7 +18,7 @@
 #define PORT_NO 9000
 #define BACKLOG 10
 // Number of bytes used to store the data sent from remote, via sockets
-#define BUFF_LEN_BYTES 128
+#define BUFF_LEN_BYTES 8194*4
 
 volatile sig_atomic_t caught_sigint = 0;
 volatile sig_atomic_t caught_sigterm = 0;
