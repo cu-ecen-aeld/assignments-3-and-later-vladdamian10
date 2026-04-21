@@ -131,6 +131,7 @@ int main(int argc, char *argv[]) {
 
             bool do_receive = true;
             ssize_t nb_rcvd;
+            ssize_t nb_read;
             ssize_t nb_sent;            
             while (do_receive) {
                 nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
@@ -151,15 +152,14 @@ int main(int argc, char *argv[]) {
                             // Then send the buffer back to the client via the socket.
                             lseek(fd, 0, SEEK_SET);
                             char* readstr = (char*)malloc(BUFF_LEN_BYTES);
-                            ssize_t num_bytes_read;
-                            while ((num_bytes_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
-                                    nb_sent = send(new_sockfd, readstr, num_bytes_read, 0);
+                            while ((nb_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
+                                    nb_sent = send(new_sockfd, readstr, nb_read, 0);
                                     if (nb_sent == -1) {
                                         perror("send");
                                         return -1;
                                     }
                             }
-                            if (num_bytes_read == -1) {
+                            if (nb_read == -1) {
                                 perror("read");
                                 return -1;
                             }
