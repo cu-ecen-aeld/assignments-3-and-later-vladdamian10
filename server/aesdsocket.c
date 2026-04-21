@@ -101,6 +101,11 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     writestr=(char*)malloc(BUFF_LEN_BYTES);
+    if (writestr == NULL) {
+        perror("malloc");
+        close(fd);
+        return -1;
+    }
 
     // log to message to syslog
     openlog(NULL, 0, LOG_USER);
@@ -176,6 +181,11 @@ int main(int argc, char *argv[]) {
                             //  the received data packet completes.
                             lseek(fd, 0, SEEK_SET);
                             char* readstr = (char*)malloc(BUFF_LEN_BYTES);
+                            if (readstr == NULL) {
+                                perror("malloc");
+                                do_receive = false;
+                                break;
+                            }
                             while ((nb_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
                                     nb_sent = send(new_sockfd, readstr, nb_read, 0);
                                     if (nb_sent == -1) {
