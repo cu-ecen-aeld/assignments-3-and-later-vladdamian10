@@ -26,6 +26,7 @@ static void signal_handler(int signal_number);
 #if 1
 static void init_sigaction(struct sigaction* action, void (*sig_handler)(int));
 static bool register_sigaction(struct sigaction* action);
+static void log_sigaction();
 #endif
 // Definition extracted from Beej's guide to network programming, for printing the IP address of the client.
 void *get_in_addr(struct sockaddr *sa);
@@ -181,12 +182,8 @@ int main(int argc, char *argv[]) {
             }
     }
 
-                if (caught_sigint) {
-                    syslog(LOG_DEBUG, "Caught SIGINT");
-                }
-                if (caught_sigterm) {
-                    syslog(LOG_DEBUG, "Caught SIGTERM");
-                }
+    log_sigaction();
+
                 close(fd);
 #if 1
                 if (filename != NULL) {
@@ -245,6 +242,14 @@ static void signal_handler(int signal_number) {
     errno = saved_errno;
 }
 
+static void log_sigaction() {
+    if (caught_sigint) {
+        syslog(LOG_DEBUG, "Caught SIGINT");
+    }
+    if (caught_sigterm) {
+        syslog(LOG_DEBUG, "Caught SIGTERM");
+    }
+}
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
