@@ -222,7 +222,6 @@ int main(int argc, char *argv[]) {
     // close socket
     if (close(sockfd) == -1) {
         perror("close socket");
-        return -1;
     }
     // Deallocate addrinfo.
     freeaddrinfo(servinfo);
