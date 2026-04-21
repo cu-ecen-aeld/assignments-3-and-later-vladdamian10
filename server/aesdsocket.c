@@ -105,8 +105,7 @@ int main(int argc, char *argv[]) {
     openlog(NULL, 0, LOG_USER);
 
     printf("Waiting forever for a signal\n");
-    while(1) {
-        if (!(caught_sigint || caught_sigterm)) {
+    while(!(caught_sigint || caught_sigterm)) {
             addr_size = sizeof(their_addr);
             new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
             if (new_sockfd == -1) {
@@ -180,9 +179,8 @@ int main(int argc, char *argv[]) {
                     s, sizeof(s));
                 syslog(LOG_USER, "Closed connection from %s", s);
             }
-        }
-        else {
-            if (success) {
+    }
+
                 if (caught_sigint) {
                     syslog(LOG_DEBUG, "Caught SIGINT");
                 }
@@ -196,10 +194,6 @@ int main(int argc, char *argv[]) {
                     filename = NULL;
                 }
 #endif                    
-                break;
-            }
-        }
-    }
     // close socket
     if (close(sockfd) == -1) {
         perror("close socket");
