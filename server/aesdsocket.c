@@ -34,7 +34,6 @@ void *get_in_addr(struct sockaddr *sa);
 
 int main(int argc, char *argv[]) {
     // signal related data
-    bool success = true;
     struct sigaction new_action;
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
@@ -51,7 +50,7 @@ int main(int argc, char *argv[]) {
 
     // signal related data
     init_sigaction(&new_action, signal_handler);
-    success = register_sigaction(&new_action);
+    register_sigaction(&new_action);
 
     // ------- socket related init ----- //
     memset(&hints, 0, sizeof(hints));
