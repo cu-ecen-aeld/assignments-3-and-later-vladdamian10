@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS += -Wall -Werror
+CFLAGS += -Wall -Werror -g
 
 ifneq (,$(findstring aarch64-none-linux-gnu-, $(CROSS_COMPILE)))
 CC := aarch64-none-linux-gnu-gcc
