@@ -131,6 +131,7 @@ int main(int argc, char *argv[]) {
 
             bool do_receive = true;
             ssize_t nb_rcvd;
+            ssize_t nb_sent;            
             while (do_receive) {
                 nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
                 if (nb_rcvd == -1) {
@@ -152,9 +153,8 @@ int main(int argc, char *argv[]) {
                             char* readstr = (char*)malloc(BUFF_LEN_BYTES);
                             ssize_t num_bytes_read;
                             while ((num_bytes_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
-                                    ssize_t num_bytes_sent;
-                                    num_bytes_sent = send(new_sockfd, readstr, num_bytes_read, 0);
-                                    if (num_bytes_sent == -1) {
+                                    nb_sent = send(new_sockfd, readstr, num_bytes_read, 0);
+                                    if (nb_sent == -1) {
                                         perror("send");
                                         return -1;
                                     }
