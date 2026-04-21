@@ -184,12 +184,12 @@ int main(int argc, char *argv[]) {
 
     log_sigaction();
 
-                close(fd);
+    close(fd);
 #if 1
-                if (filename != NULL) {
-                    remove(filename);
-                    filename = NULL;
-                }
+    if (filename != NULL) {
+        remove(filename);
+        filename = NULL;
+    }
 #endif                    
     // close socket
     if (close(sockfd) == -1) {
