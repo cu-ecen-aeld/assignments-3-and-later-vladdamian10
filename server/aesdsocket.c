@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
                 if (writestr[nb_rcvd-1] == '\n') {
                         if (write(fd, writestr, nb_rcvd) == -1) {
                             perror("write");
-                            return -1;
+                            do_receive = false;
                         } else {
                             // Then send the buffer back to the client via the socket.
                             lseek(fd, 0, SEEK_SET);
@@ -156,12 +156,12 @@ int main(int argc, char *argv[]) {
                                     nb_sent = send(new_sockfd, readstr, nb_read, 0);
                                     if (nb_sent == -1) {
                                         perror("send");
-                                        return -1;
+                                        do_receive = false;
                                     }
                             }
                             if (nb_read == -1) {
                                 perror("read");
-                                return -1;
+                                do_receive = false;
                             }
                             free(readstr);
                             do_receive = false;
