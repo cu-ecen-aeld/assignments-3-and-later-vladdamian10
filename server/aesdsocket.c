@@ -32,6 +32,8 @@ static void log_sigaction();
 // Definition extracted from Beej's guide to network programming, for printing the IP address of the client.
 void *get_in_addr(struct sockaddr *sa);
 
+void create_daemon(void);
+
 int main(int argc, char *argv[]) {
     // signal related data
     struct sigaction new_action;
@@ -89,6 +91,10 @@ int main(int argc, char *argv[]) {
         close(sockfd);
         perror("bind");
         return -1;
+    }
+
+    if (run_as_daemon) {
+        create_daemon();
     }
 
     int yes=1;
@@ -311,4 +317,38 @@ void *get_in_addr(struct sockaddr *sa)
     }
 
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+void create_daemon(void) {
+    pid_t pid;
+    int rv;
+
+    pid = fork();
+    if (pid < 0) {
+        syslog(LOG_USER | LOG_ERR, "Failed to fork, error = %d", errno);
+        exit(EXIT_FAILURE);
+    }
+    // parent process
+    else if (pid > 0) exit(EXIT_SUCCESS);
+
+    // if we made it here, this is the child process
+    if (setsid() < 0) exit(EXIT_FAILURE);
+
+    // set file permissions
+    umask(0);
+
+    // change to parent directory
+    if ((rv = chdir("/")) == -1) {
+        syslog(LOG_USER | LOG_ERR, "Failed to chdir");
+    }
+
+    // Close all open file descriptors
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+
+    // Redirect stdio to /dev/null
+    open("/dev/null", O_RDONLY); // stdin
+    open("/dev/null", O_WRONLY); // stdout
+    open("/dev/null", O_RDWR);   // stderr
 }
