@@ -130,20 +130,20 @@ int main(int argc, char *argv[]) {
             memset(writestr, 0, BUFF_LEN_BYTES);
 
             bool do_receive = true;
+            ssize_t nb_rcvd;
             while (do_receive) {
-                ssize_t num_bytes;
-                num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
-                if (num_bytes == -1) {
+                nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
+                if (nb_rcvd == -1) {
                     perror("recv");
                     do_receive = false;
                 }
-                else if (num_bytes == 0) {
+                else if (nb_rcvd == 0) {
                     do_receive = false;
                 }
 
                 // read through the buffer. If you find "\n", then write to the file.
-                if (writestr[num_bytes-1] == '\n') {
-                        if (write(fd, writestr, num_bytes) == -1) {
+                if (writestr[nb_rcvd-1] == '\n') {
+                        if (write(fd, writestr, nb_rcvd) == -1) {
                             perror("write");
                             return -1;
                         } else {
