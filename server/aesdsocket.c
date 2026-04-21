@@ -166,9 +166,11 @@ int main(int argc, char *argv[]) {
                     }
                     perror("recv");
                     do_receive = false;
+                    break;
                 }
                 else if (nb_rcvd == 0) {
                     do_receive = false;
+                    break;
                 }
                 // e. use a newline to separate data packets received.
                 if (writestr[nb_rcvd-1] == '\n') {
