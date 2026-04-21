@@ -131,19 +131,12 @@ int main(int argc, char *argv[]) {
 
             ssize_t num_bytes;
             while ((num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0)) > 0) {
-                // Keep reading
                 // read through the buffer. If you find "\n", then write to the file.
-                int i;
-                for (i=0; i<num_bytes;i++) {
-                    if (writestr[i] == '\n') {
-                        // Every newline character in the string should mean a packet complete. I.e. write to fd
-                        // only after having a complete packet.
-
+                if (writestr[num_bytes-1] == '\n') {
                         if (write(fd, writestr, num_bytes) == -1) {
                             perror("write");
                             return -1;
                         } else {
-                            // TODO: Must look for a better place for this call.
                             // Then send the buffer back to the client via the socket.
                             lseek(fd, 0, SEEK_SET);
                             char* readstr = (char*)malloc(BUFF_LEN_BYTES);
@@ -163,7 +156,6 @@ int main(int argc, char *argv[]) {
                             free(readstr);
                             break;
                         }
-                    }
                 }
             }
             if (num_bytes == -1) {
