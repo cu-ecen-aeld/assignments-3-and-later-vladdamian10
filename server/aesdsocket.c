@@ -342,11 +342,6 @@ void create_daemon(void) {
         syslog(LOG_USER | LOG_ERR, "Failed to chdir");
     }
 
-    // Close all open file descriptors
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
-
     // Redirect stdio to /dev/null
     open("/dev/null", O_RDONLY); // stdin
     open("/dev/null", O_WRONLY); // stdout
