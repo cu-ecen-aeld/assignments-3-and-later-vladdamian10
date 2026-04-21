@@ -129,8 +129,18 @@ int main(int argc, char *argv[]) {
             // always reset buffer before reading again.
             memset(writestr, 0, BUFF_LEN_BYTES);
 
-            ssize_t num_bytes;
-            while ((num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0)) > 0) {
+            bool do_receive = true;
+            while (do_receive) {
+                ssize_t num_bytes;
+                num_bytes = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
+                if (num_bytes == -1) {
+                    perror("recv");
+                    do_receive = false;
+                }
+                else if (num_bytes == 0) {
+                    do_receive = false;
+                }
+
                 // read through the buffer. If you find "\n", then write to the file.
                 if (writestr[num_bytes-1] == '\n') {
                         if (write(fd, writestr, num_bytes) == -1) {
@@ -154,22 +164,9 @@ int main(int argc, char *argv[]) {
                                 return -1;
                             }
                             free(readstr);
-                            break;
+                            do_receive = false;
                         }
                 }
-            }
-            if (num_bytes == -1) {
-                // if (errno == EINTR) {
-                //     // interrupted by signal → break out to main loop
-                //     close(new_sockfd);
-                //     continue;
-                // }
-                perror("recv");
-                return -1;
-            }
-            else if (num_bytes == 0) {
-                // TODO: the remote side has closed the connection on the server.
-                // Should I exit?
             }
 
             /* close the new socket for this connection */
