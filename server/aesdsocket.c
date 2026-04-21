@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
                 }
                 else {
                     perror("accept");
+                    close(new_sockfd);
                     break;
                 }
             }
