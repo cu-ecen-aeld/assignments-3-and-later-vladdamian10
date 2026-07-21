@@ -29,7 +29,8 @@ int main(int argc, char *argv[]) {
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
     int fd;
-    char* writestr;
+    char* writestr; // used to write bytes to file
+    char *readstr; // used to read bytes from file
     // socket related data
     int sockfd, new_sockfd;
     struct sockaddr_storage their_addr;
@@ -107,6 +108,11 @@ int main(int argc, char *argv[]) {
         close(fd);
         return -1;
     }
+    if((readstr=(char*)malloc(BUFF_LEN_BYTES)) == NULL) {
+        perror("malloc");
+        close(fd);
+        return -1;
+    }    
 
     // log to message to syslog
     openlog(NULL, 0, LOG_USER);
@@ -189,14 +195,8 @@ int main(int argc, char *argv[]) {
                 // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
                 //  the received data packet completes.
                 if (is_packet_received) {
-                            is_packet_received = false; // reset the flag.
                             lseek(fd, 0, SEEK_SET);
-                            char* readstr = (char*)malloc(BUFF_LEN_BYTES);
-                            if (readstr == NULL) {
-                                perror("malloc");
-                                do_receive = false;
-                                break;
-                            }
+
                             while ((nb_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
                                     nb_sent = send(new_sockfd, readstr, nb_read, 0);
                                     if (nb_sent == -1) {
@@ -208,7 +208,8 @@ int main(int argc, char *argv[]) {
                                 perror("read");
                                 do_receive = false;
                             }
-                            free(readstr);
+                            is_packet_received = false; // reset the flag.                            
+                            memset(readstr, 0, BUFF_LEN_BYTES);
                             //do_receive = false;
                 }
             }
@@ -246,10 +247,14 @@ int main(int argc, char *argv[]) {
     // Deallocate addrinfo.
     freeaddrinfo(servinfo);
 
-    // Deallocate writestr buffer
+    // Deallocate buffers
     if (writestr != NULL) {
         free(writestr);
         writestr = NULL;
+    }
+    if (readstr != NULL) {
+        free(readstr);
+        readstr = NULL;
     }
 
     closelog();
