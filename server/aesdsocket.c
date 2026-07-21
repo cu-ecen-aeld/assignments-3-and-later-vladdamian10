@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     }
 
     // ------- Get addrinfo ----- //
-    if (get_servinfo(PORT_NO, &servinfo) != 0) {
+    if (create_servinfo(PORT_NO, &servinfo) != 0) {
         return -1;
     }
 

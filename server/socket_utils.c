@@ -16,7 +16,7 @@ void *get_in_addr(struct sockaddr *sa)
 }
 
 
-int get_servinfo(const char* port_number, struct addrinfo** servinfo) {
+int create_servinfo(const char* port_number, struct addrinfo** servinfo) {
     int status = 0;
     struct addrinfo hints;    
     // ------- socket related init ----- //

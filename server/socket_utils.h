@@ -8,6 +8,6 @@
 // Definition extracted from Beej's guide to network programming, for printing the IP address of the client.
 void *get_in_addr(struct sockaddr *sa);
 
-// Load addrinfo structs.
-int get_servinfo(const char* port_number, struct addrinfo** servinfo);
+// Load addrinfo struct. Use is responsible to free the 'servinfo'.
+int create_servinfo(const char* port_number, struct addrinfo** servinfo);
 #endif
