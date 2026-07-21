@@ -29,8 +29,6 @@ int main(int argc, char *argv[]) {
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
     int fd;
-    char* writestr; // used to write bytes to file
-    char *readstr; // used to read bytes from file
     // socket related data
     int sockfd, new_sockfd;
     struct sockaddr_storage their_addr;
@@ -102,17 +100,6 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    if((writestr=(char*)malloc(BUFF_LEN_BYTES)) == NULL) {
-        perror("malloc");
-        close(fd);
-        return -1;
-    }
-    if((readstr=(char*)malloc(BUFF_LEN_BYTES)) == NULL) {
-        perror("malloc");
-        close(fd);
-        return -1;
-    }    
-
     // log to message to syslog
     openlog(NULL, 0, LOG_USER);
 
@@ -143,8 +130,15 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            // always reset buffer before reading again.
-            memset(writestr, 0, BUFF_LEN_BYTES);
+            char* writestr = (char*)malloc(BUFF_LEN_BYTES); // used to write bytes to file
+            char* readstr = (char*)malloc(BUFF_LEN_BYTES); // used to read bytes from file
+            if (writestr == NULL || readstr == NULL) {
+                perror("malloc");
+                free(writestr);
+                free(readstr);
+                close(new_sockfd);
+                break;
+            }
 
             bool do_receive = true;
             bool is_packet_received = false;
@@ -202,10 +196,20 @@ int main(int argc, char *argv[]) {
                                 perror("read");
                                 do_receive = false;
                             }
-                            is_packet_received = false; // reset the flag.                            
+                            is_packet_received = false; // reset the flag.
                             memset(readstr, 0, BUFF_LEN_BYTES);
                             //do_receive = false;
                 }
+            }
+
+            // Deallocate buffers
+            if (writestr != NULL) {
+                free(writestr);
+                writestr = NULL;
+            }
+            if (readstr != NULL) {
+                free(readstr);
+                readstr = NULL;
             }
 
             /* close the new socket for this connection */
@@ -237,16 +241,6 @@ int main(int argc, char *argv[]) {
     }
     // Deallocate addrinfo.
     freeaddrinfo(servinfo);
-
-    // Deallocate buffers
-    if (writestr != NULL) {
-        free(writestr);
-        writestr = NULL;
-    }
-    if (readstr != NULL) {
-        free(readstr);
-        readstr = NULL;
-    }
 
     closelog();
 
