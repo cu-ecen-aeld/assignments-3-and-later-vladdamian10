@@ -3,6 +3,8 @@
 #include <netdb.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <syslog.h>
 #include "socket_utils.h"
 
 // get sockaddr, IPv4 or IPv6:
@@ -30,4 +32,11 @@ int create_servinfo(const char* port_number, struct addrinfo** servinfo) {
         fprintf(stderr, "gai error: %s\n", gai_strerror(status));
     }
     return status;
+}
+
+void log_client_addr(struct sockaddr_storage *addr, const char *action) {
+    char s[INET6_ADDRSTRLEN];
+
+    inet_ntop(addr->ss_family, get_in_addr((struct sockaddr *)addr), s, sizeof(s));
+    syslog(LOG_USER, "%s connection from %s", action, s);
 }

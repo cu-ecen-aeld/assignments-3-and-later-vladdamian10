@@ -36,7 +36,6 @@ int main(int argc, char *argv[]) {
     struct sockaddr_storage their_addr;
     socklen_t addr_size;    
     struct addrinfo* servinfo = NULL;
-    char s[INET6_ADDRSTRLEN];
 
     bool run_as_daemon = false;
     // Parse command line arguments
@@ -136,10 +135,7 @@ int main(int argc, char *argv[]) {
             else {
                 // d. Logs message to the syslog “Accepted connection from xxx” where XXXX
                 // is the IP address of the connected client.
-                inet_ntop(their_addr.ss_family,
-                    get_in_addr((struct sockaddr *)&their_addr),
-                    s, sizeof(s));
-                syslog(LOG_USER, "Accepted connection from %s", s);
+                log_client_addr(&their_addr, "Accepted");
             }
 
             // make new_sockfd non-blocking
@@ -227,10 +223,7 @@ int main(int argc, char *argv[]) {
             }
             else {
                 // g. Logs message to the syslog “Closed connection from XXX” where XXX is the IP address of the connected client.
-                inet_ntop(their_addr.ss_family,
-                    get_in_addr((struct sockaddr *)&their_addr),
-                    s, sizeof(s));
-                syslog(LOG_USER, "Closed connection from %s", s);
+                log_client_addr(&their_addr, "Closed");
             }
     }
 
