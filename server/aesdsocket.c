@@ -15,14 +15,12 @@
 #include<arpa/inet.h>
 #include <fcntl.h>
 #include "sigaction.h"
+#include "socket_utils.h"
 
 #define PORT_NO 9000
 #define BACKLOG 10
 // Number of bytes used to store the data sent from remote, via sockets
 #define BUFF_LEN_BYTES 8194*4
-
-// Definition extracted from Beej's guide to network programming, for printing the IP address of the client.
-void *get_in_addr(struct sockaddr *sa);
 
 void create_daemon(void);
 
@@ -259,16 +257,6 @@ int main(int argc, char *argv[]) {
     closelog();
 
     return 0;
-}
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 void create_daemon(void) {
