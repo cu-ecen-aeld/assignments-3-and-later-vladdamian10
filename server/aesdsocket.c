@@ -140,12 +140,12 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            bool do_receive = true;
+            bool do_serve = true;
             bool is_packet_received = false;
             ssize_t nb_rcvd = 0; // used as an offset to know how many bytes are in a packet.
             ssize_t nb_read;
             ssize_t nb_sent;
-            while (do_receive && !(caught_sigint || caught_sigterm)) {
+            while (do_serve && !(caught_sigint || caught_sigterm)) {
                 // e. Receives data over the connection and appends to file.
                 ssize_t n = recv(new_sockfd, (char*)(writestr + nb_rcvd), BUFF_LEN_BYTES - nb_rcvd, 0);
                 if (n == -1) {
@@ -154,11 +154,11 @@ int main(int argc, char *argv[]) {
                         continue;
                     }
                     perror("recv");
-                    do_receive = false;
+                    do_serve = false;
                     break;
                 }
                 else if (n == 0) {
-                    do_receive = false;
+                    do_serve = false;
                     break;
                 }
                 else {
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
                         // e. each newline should result in an append to the /var/tmp/aesdsocketdata file
                         if (write(fd, writestr, nb_rcvd) == -1) {
                             perror("write");
-                            do_receive = false;
+                            do_serve = false;
                             is_packet_received = false;
                         } else {
                             is_packet_received = true;
@@ -189,12 +189,12 @@ int main(int argc, char *argv[]) {
                             while ((nb_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
                                     if ((nb_sent = send(new_sockfd, readstr, nb_read, 0)) == -1) {
                                         perror("send");
-                                        do_receive = false;
+                                        do_serve = false;
                                     }
                             }
                             if (nb_read == -1) {
                                 perror("read");
-                                do_receive = false;
+                                do_serve = false;
                             }
                             is_packet_received = false; // reset the flag.
                             memset(readstr, 0, BUFF_LEN_BYTES);
