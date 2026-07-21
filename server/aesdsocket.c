@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     hints.ai_flags = AI_PASSIVE; // fill in my IP for me
 
     // Load addrinfo structs.
-    if ((status = getaddrinfo(NULL, "9000", &hints, &servinfo)) != 0) {
+    if ((status = getaddrinfo(NULL, (const char*)PORT_NO, &hints, &servinfo)) != 0) {
         fprintf(stderr, "gai error: %s\n", gai_strerror(status));
         return -1;
     }
