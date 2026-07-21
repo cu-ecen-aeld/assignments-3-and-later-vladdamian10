@@ -68,6 +68,13 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    int yes=1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        close(sockfd);
+        perror("setsockopt");
+        return -1;
+    }
+
     // bind
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
         close(sockfd);
@@ -77,13 +84,6 @@ int main(int argc, char *argv[]) {
 
     if (run_as_daemon) {
         create_daemon();
-    }
-
-    int yes=1;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        close(sockfd);
-        perror("setsockopt");
-        return -1;
     }
 
     // c. Listens for and a connection.
