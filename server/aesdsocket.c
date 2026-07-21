@@ -18,7 +18,7 @@
 #include "socket_utils.h"
 #include "daemon.h"
 
-#define PORT_NO 9000
+#define PORT_NO "9000"
 #define BACKLOG 10
 // Number of bytes used to store the data sent from remote, via sockets
 #define BUFF_LEN_BYTES 8194*4
@@ -31,12 +31,10 @@ int main(int argc, char *argv[]) {
     int fd;
     char* writestr;
     // socket related data
-    int status;
     int sockfd, new_sockfd;
     struct sockaddr_storage their_addr;
     socklen_t addr_size;    
-    struct addrinfo hints;
-    struct addrinfo *servinfo;
+    struct addrinfo* servinfo = NULL;
     char s[INET6_ADDRSTRLEN];
 
     bool run_as_daemon = false;
@@ -57,15 +55,8 @@ int main(int argc, char *argv[]) {
     init_sigaction(&new_action, signal_handler);
     register_sigaction(&new_action);
 
-    // ------- socket related init ----- //
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM; // TCP stream socket
-    hints.ai_flags = AI_PASSIVE; // fill in my IP for me
-
-    // Load addrinfo structs.
-    if ((status = getaddrinfo(NULL, (const char*)PORT_NO, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "gai error: %s\n", gai_strerror(status));
+    // ------- Get addrinfo ----- //
+    if (get_servinfo(PORT_NO, &servinfo) != 0) {
         return -1;
     }
 
