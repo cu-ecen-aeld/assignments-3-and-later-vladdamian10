@@ -160,13 +160,13 @@ int main(int argc, char *argv[]) {
 
             bool do_receive = true;
             bool is_packet_received = false;
-            ssize_t nb_rcvd;
+            ssize_t nb_rcvd = 0; // used as an offset to know how many bytes are in a packet.
             ssize_t nb_read;
             ssize_t nb_sent;
             while (do_receive && !(caught_sigint || caught_sigterm)) {
                 // e. Receives data over the connection and appends to file.
-                nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
-                if (nb_rcvd == -1) {
+                ssize_t n = recv(new_sockfd, (char*)(writestr + nb_rcvd), BUFF_LEN_BYTES - nb_rcvd, 0);
+                if (n == -1) {
                     if (errno == EAGAIN || errno == EWOULDBLOCK) {
                         // no data available, try again later.
                         continue;
@@ -175,9 +175,12 @@ int main(int argc, char *argv[]) {
                     do_receive = false;
                     break;
                 }
-                else if (nb_rcvd == 0) {
+                else if (n == 0) {
                     do_receive = false;
                     break;
+                }
+                else {
+                    nb_rcvd += n;
                 }
 
                 // e. use a newline to separate data packets received.
@@ -190,6 +193,10 @@ int main(int argc, char *argv[]) {
                         } else {
                             is_packet_received = true;
                         }
+                        // always reset buffer before reading again.
+                        memset(writestr, 0, BUFF_LEN_BYTES);
+                        // reset the offset of received bytes.
+                        nb_rcvd = 0;
                 }
 
                 // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
