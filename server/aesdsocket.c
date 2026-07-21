@@ -138,17 +138,9 @@ int main(int argc, char *argv[]) {
                 log_client_addr(&their_addr, "Accepted");
             }
 
-            // make new_sockfd non-blocking
-            // Read the current descriptor flags
-            int flags = fcntl(new_sockfd, F_GETFL, 0);
-            if (flags == -1) {
-                perror("fcntl F_GETFL");
+            if (set_nonblocking(new_sockfd) == -1) {
+                close(new_sockfd);
                 break;
-            }
-            // and add O_NONBLOCK to make it non-blocking
-            if (fcntl(new_sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
-                perror("fcntl F_SETFL");
-                // handle error
             }
 
             // always reset buffer before reading again.

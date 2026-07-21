@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <syslog.h>
+#include <fcntl.h>
 #include "socket_utils.h"
 
 // get sockaddr, IPv4 or IPv6:
@@ -39,4 +40,19 @@ void log_client_addr(struct sockaddr_storage *addr, const char *action) {
 
     inet_ntop(addr->ss_family, get_in_addr((struct sockaddr *)addr), s, sizeof(s));
     syslog(LOG_USER, "%s connection from %s", action, s);
+}
+
+int set_nonblocking(int fd) {
+    // Read the current descriptor flags
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl F_GETFL");
+        return -1;
+    }
+    // and add O_NONBLOCK to make it non-blocking
+    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl F_SETFL");
+        return -1;
+    }
+    return 0;
 }

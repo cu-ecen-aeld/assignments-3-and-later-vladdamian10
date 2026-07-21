@@ -13,4 +13,7 @@ int create_servinfo(const char* port_number, struct addrinfo** servinfo);
 
 // Logs "<action> connection from <ip>" to syslog, e.g. action = "Accepted" or "Closed".
 void log_client_addr(struct sockaddr_storage *addr, const char *action);
+
+// Sets fd to non-blocking mode. Returns 0 on success, -1 on failure.
+int set_nonblocking(int fd);
 #endif
