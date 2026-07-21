@@ -51,9 +51,11 @@ int main(int argc, char *argv[]) {
             syslog(LOG_USER, "Running in foreground.");
         }
 
-    // signal related data
-    init_sigaction(&new_action, signal_handler);
-    register_sigaction(&new_action);
+    // a. Add sigaction
+    // Take care of initialiazing and using a signal handler.
+    if (create_sigaction(&new_action) != 0) {
+        return -1;
+    }
 
     // ------- Get addrinfo ----- //
     if (get_servinfo(PORT_NO, &servinfo) != 0) {

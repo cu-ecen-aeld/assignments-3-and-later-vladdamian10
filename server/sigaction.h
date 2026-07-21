@@ -11,6 +11,7 @@ void signal_handler(int signal_number);
 void init_sigaction(struct sigaction* action, void (*sig_handler)(int));
 bool register_sigaction(struct sigaction* action);
 void log_sigaction();
+int create_sigaction(struct sigaction* action);
 #endif
 
 #endif

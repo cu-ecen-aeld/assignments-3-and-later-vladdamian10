@@ -49,3 +49,10 @@ void log_sigaction() {
         syslog(LOG_DEBUG, "Caught SIGTERM");
     }
 }
+
+int create_sigaction(struct sigaction* action) {
+    init_sigaction(action, signal_handler);
+    register_sigaction(action);
+
+    return 0;
+}
