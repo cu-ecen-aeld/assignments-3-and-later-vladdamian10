@@ -183,8 +183,13 @@ int main(int argc, char *argv[]) {
                             is_packet_received = false;
                         } else {
                             is_packet_received = true;
-                            // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
-                            //  the received data packet completes.
+                        }
+                }
+
+                // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
+                //  the received data packet completes.
+                if (is_packet_received) {
+                            is_packet_received = false; // reset the flag.
                             lseek(fd, 0, SEEK_SET);
                             char* readstr = (char*)malloc(BUFF_LEN_BYTES);
                             if (readstr == NULL) {
@@ -205,7 +210,6 @@ int main(int argc, char *argv[]) {
                             }
                             free(readstr);
                             //do_receive = false;
-                        }
                 }
             }
 
