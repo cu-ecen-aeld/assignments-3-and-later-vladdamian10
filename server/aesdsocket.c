@@ -128,11 +128,11 @@ int main(int argc, char *argv[]) {
                 }
             }
             else {
+                // d. Logs message to the syslog “Accepted connection from xxx” where XXXX
+                // is the IP address of the connected client.
                 inet_ntop(their_addr.ss_family,
                     get_in_addr((struct sockaddr *)&their_addr),
                     s, sizeof(s));
-                // d. Logs message to the syslog “Accepted connection from xxx” where XXXX
-                // is the IP address of the connected client.                    
                 syslog(LOG_USER, "Accepted connection from %s", s);
             }
 
@@ -211,10 +211,10 @@ int main(int argc, char *argv[]) {
                 break;
             }
             else {
+                // g. Logs message to the syslog “Closed connection from XXX” where XXX is the IP address of the connected client.
                 inet_ntop(their_addr.ss_family,
                     get_in_addr((struct sockaddr *)&their_addr),
                     s, sizeof(s));
-                // g. Logs message to the syslog “Closed connection from XXX” where XXX is the IP address of the connected client.
                 syslog(LOG_USER, "Closed connection from %s", s);
             }
     }
