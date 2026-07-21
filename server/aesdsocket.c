@@ -198,8 +198,7 @@ int main(int argc, char *argv[]) {
                             lseek(fd, 0, SEEK_SET);
 
                             while ((nb_read = read(fd, readstr, BUFF_LEN_BYTES)) > 0) {
-                                    nb_sent = send(new_sockfd, readstr, nb_read, 0);
-                                    if (nb_sent == -1) {
+                                    if ((nb_sent = send(new_sockfd, readstr, nb_read, 0)) == -1) {
                                         perror("send");
                                         do_receive = false;
                                     }
