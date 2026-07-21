@@ -153,9 +153,10 @@ int main(int argc, char *argv[]) {
             memset(writestr, 0, BUFF_LEN_BYTES);
 
             bool do_receive = true;
+            bool is_packet_received = false;
             ssize_t nb_rcvd;
             ssize_t nb_read;
-            ssize_t nb_sent;            
+            ssize_t nb_sent;
             while (do_receive && !(caught_sigint || caught_sigterm)) {
                 // e. Receives data over the connection and appends to file.
                 nb_rcvd = recv(new_sockfd, (char*)writestr, BUFF_LEN_BYTES, 0);
@@ -172,13 +173,16 @@ int main(int argc, char *argv[]) {
                     do_receive = false;
                     break;
                 }
+
                 // e. use a newline to separate data packets received.
                 if (writestr[nb_rcvd-1] == '\n') {
                         // e. each newline should result in an append to the /var/tmp/aesdsocketdata file
                         if (write(fd, writestr, nb_rcvd) == -1) {
                             perror("write");
                             do_receive = false;
+                            is_packet_received = false;
                         } else {
+                            is_packet_received = true;
                             // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
                             //  the received data packet completes.
                             lseek(fd, 0, SEEK_SET);
