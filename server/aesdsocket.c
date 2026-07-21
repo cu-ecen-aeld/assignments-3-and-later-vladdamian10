@@ -190,11 +190,13 @@ int main(int argc, char *argv[]) {
                                     if ((nb_sent = send(new_sockfd, readstr, nb_read, 0)) == -1) {
                                         perror("send");
                                         do_serve = false;
+                                        break;
                                     }
                             }
                             if (nb_read == -1) {
                                 perror("read");
                                 do_serve = false;
+                                break;
                             }
                             is_packet_received = false; // reset the flag.
                             memset(readstr, 0, BUFF_LEN_BYTES);
