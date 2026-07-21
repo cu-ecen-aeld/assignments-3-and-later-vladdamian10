@@ -16,13 +16,12 @@
 #include <fcntl.h>
 #include "sigaction.h"
 #include "socket_utils.h"
+#include "daemon.h"
 
 #define PORT_NO 9000
 #define BACKLOG 10
 // Number of bytes used to store the data sent from remote, via sockets
 #define BUFF_LEN_BYTES 8194*4
-
-void create_daemon(void);
 
 int main(int argc, char *argv[]) {
     // signal related data
@@ -257,33 +256,4 @@ int main(int argc, char *argv[]) {
     closelog();
 
     return 0;
-}
-
-void create_daemon(void) {
-    pid_t pid;
-    int rv;
-
-    pid = fork();
-    if (pid < 0) {
-        syslog(LOG_USER | LOG_ERR, "Failed to fork, error = %d", errno);
-        exit(EXIT_FAILURE);
-    }
-    // parent process
-    else if (pid > 0) exit(EXIT_SUCCESS);
-
-    // if we made it here, this is the child process
-    if (setsid() < 0) exit(EXIT_FAILURE);
-
-    // set file permissions
-    umask(0);
-
-    // change to parent directory
-    if ((rv = chdir("/")) == -1) {
-        syslog(LOG_USER | LOG_ERR, "Failed to chdir");
-    }
-
-    // Redirect stdio to /dev/null
-    open("/dev/null", O_RDONLY); // stdin
-    open("/dev/null", O_WRONLY); // stdout
-    open("/dev/null", O_RDWR);   // stderr
 }
