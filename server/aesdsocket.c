@@ -94,16 +94,15 @@ int main(int argc, char *argv[]) {
 
     // ------- file related init ----- //
     // e. create the file if it doesn’t exist.
-    fd = open(filename,
+    if ((fd = open(filename,
           O_RDWR | O_CREAT | O_APPEND, /* flags */
-          S_IWUSR | S_IRUSR | S_IWGRP | S_IROTH /* chmode*/
-    );
-    if (fd == -1) { 
+          S_IWUSR | S_IRUSR | S_IWGRP | S_IROTH /* chmode*/)
+        ) == -1 ) { 
         perror("open file");
         return -1;
     }
-    writestr=(char*)malloc(BUFF_LEN_BYTES);
-    if (writestr == NULL) {
+
+    if((writestr=(char*)malloc(BUFF_LEN_BYTES)) == NULL) {
         perror("malloc");
         close(fd);
         return -1;
@@ -117,8 +116,7 @@ int main(int argc, char *argv[]) {
     while(!(caught_sigint || caught_sigterm)) {
             addr_size = sizeof(their_addr);
             // c. Accepts a connection.
-            new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size);
-            if (new_sockfd == -1) {
+            if ((new_sockfd = accept(sockfd, (struct sockaddr*)&their_addr, &addr_size)) == -1) {
                 if ((errno == EINTR) || (errno == EAGAIN)) {
                     // interrupted by signal → break out to main loop
                     continue;
