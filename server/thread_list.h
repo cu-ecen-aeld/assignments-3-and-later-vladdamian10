@@ -10,4 +10,5 @@ struct thread_node {
     SLIST_ENTRY(thread_node) next_node;
 };
 
+SLIST_HEAD(thread_list, thread_node);
 #endif
