@@ -14,6 +14,7 @@
 #include <netinet/in.h>
 #include<arpa/inet.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include "sigaction.h"
 #include "socket_utils.h"
 #include "daemon.h"
@@ -28,6 +29,8 @@ int main(int argc, char *argv[]) {
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
     int fd;
+    // guards writes/reads to fd, which will be shared across per-connection threads.
+    pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
     // socket related data
     int sockfd, new_sockfd;
     struct sockaddr_storage their_addr;
@@ -129,7 +132,7 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            handle_connection(new_sockfd, fd);
+            handle_connection(new_sockfd, fd, &file_mutex);
 
             /* close the new socket for this connection */
             if (close(new_sockfd) == -1) {
