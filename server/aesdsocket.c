@@ -183,8 +183,6 @@ int main(int argc, char *argv[]) {
     if (close(sockfd) == -1) {
         perror("close socket");
     }
-    // Deallocate addrinfo.
-    freeaddrinfo(servinfo);
 
     closelog();
 

@@ -19,20 +19,28 @@ void *get_in_addr(struct sockaddr *sa)
 }
 
 
+// B1uilds servinfo by hand instead of calling getaddrinfo().
+// ATTN! Getting read of getaddrinfo() eliminates the internal memory leak
+// that is part of the glibc.
 int create_servinfo(const char* port_number, struct addrinfo** servinfo) {
-    int status = 0;
-    struct addrinfo hints;    
-    // ------- socket related init ----- //
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM; // TCP stream socket
-    hints.ai_flags = AI_PASSIVE; // fill in my IP for me
+    static struct addrinfo ai;
+    static struct sockaddr_in addr;
 
-    // Load addrinfo structs.
-    if ((status = getaddrinfo(NULL, port_number, &hints, servinfo)) != 0) {
-        fprintf(stderr, "gai error: %s\n", gai_strerror(status));
-    }
-    return status;
+    memset(&ai, 0, sizeof(ai));
+    memset(&addr, 0, sizeof(addr));
+
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons((uint16_t)atoi(port_number));
+
+    ai.ai_family = AF_INET;
+    ai.ai_socktype = SOCK_STREAM;
+    ai.ai_protocol = 0;
+    ai.ai_addr = (struct sockaddr*)&addr;
+    ai.ai_addrlen = sizeof(addr);
+
+    *servinfo = &ai;
+    return 0;
 }
 
 void log_client_addr(struct sockaddr_storage *addr, const char *action) {
