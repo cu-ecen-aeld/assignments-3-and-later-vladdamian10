@@ -19,22 +19,6 @@ int thread_list_add(struct thread_list *head, struct client_data *td) {
     return 0;
 }
 
-int thread_list_spawn(struct thread_list *head, int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
-    struct client_data *td = client_thread_create(socket_fd, file_fd, file_mutex);
-    if (td == NULL) {
-        return -1;
-    }
-
-    if (thread_list_add(head, td) != 0) {
-        // thread is already running; join it before dropping td, otherwise
-        // it and its socket would be leaked.
-        client_thread_destroy(td);
-        return -1;
-    }
-
-    return 0;
-}
-
 void thread_list_join(struct thread_list *head, bool force_join) {
     struct thread_node *cur, *tmp;
     if (!force_join) { // join thread only if the work is complete.
