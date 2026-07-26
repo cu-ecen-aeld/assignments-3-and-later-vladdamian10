@@ -1,6 +1,19 @@
+#include <stdlib.h>
 #include <unistd.h>
 #include "thread_data.h"
 #include "connection_handler.h"
+
+struct thread_data *thread_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
+    struct thread_data *td = malloc(sizeof(*td));
+    if (td == NULL) {
+        return NULL;
+    }
+    td->socket_fd = socket_fd;
+    td->file_fd = file_fd;
+    td->file_mutex = file_mutex;
+    td->is_complete = false;
+    return td;
+}
 
 void *process_connection(void *arg) {
     struct thread_data *td = (struct thread_data *)arg;

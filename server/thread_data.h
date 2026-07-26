@@ -13,6 +13,9 @@ struct thread_data {
     bool is_complete;
 };
 
+// Allocates and initializes a thread_data for a newly accepted connection.
+struct thread_data *thread_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex);
+
 // pthread_create entry point. arg must be a struct thread_data * (owned by
 // the caller). Runs handle_connection to completion, closes socket_fd, then
 // marks is_complete so the caller can join and free it.
