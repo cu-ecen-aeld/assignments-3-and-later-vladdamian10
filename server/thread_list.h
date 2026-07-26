@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <sys/queue.h>
-#include "thread_data.h"
+#include "thread_client.h"
 
 // Node wrapping a thread_data pointer for SLIST tracking.
 struct thread_node {

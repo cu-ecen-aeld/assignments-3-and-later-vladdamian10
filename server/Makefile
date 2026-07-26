@@ -6,8 +6,8 @@ CC := aarch64-none-linux-gnu-gcc
 endif
 
 all:
-	$(CC) aesdsocket.c sigaction.c socket_utils.c daemon.c connection_handler.c thread_list.c thread_data.c timestamp_thread.c $(CFLAGS) -o aesdsocket -lpthread
+	$(CC) aesdsocket.c sigaction.c socket_utils.c daemon.c connection_handler.c thread_list.c thread_data.c timestamp_thread.c thread_client.c $(CFLAGS) -o aesdsocket -lpthread
 
 clean:
-	rm -f aesdsocket.o sigaction.o socket_utils.o daemon.o connection_handler.o thread_list.o thread_data.o timestamp_thread.o aesdsocket
+	rm -f aesdsocket.o sigaction.o socket_utils.o daemon.o connection_handler.o thread_list.o thread_data.o timestamp_thread.o thread_client.o aesdsocket
 

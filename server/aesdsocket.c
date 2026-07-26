@@ -21,6 +21,7 @@
 #include "thread_data.h"
 #include "thread_list.h"
 #include "timestamp_thread.h"
+#include "thread_client.h"
 
 #define PORT_NO "9000"
 #define BACKLOG 10
