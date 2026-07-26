@@ -20,9 +20,15 @@ struct client_data {
 };
 
 // Allocates and initializes a thread_data for a newly accepted connection.
-struct client_data *client_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex);
+struct thread_data *thread_data_create(int file_fd, pthread_mutex_t *file_mutex);
 
 // Frees a thread_data allocated by thread_data_create().
+void thread_data_destroy(struct thread_data *td);
+
+// Allocates and initializes a client_data for a newly accepted connection.
+struct client_data *client_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex);
+
+// Frees a client_data allocated by thread_data_create().
 void client_data_destroy(struct client_data *td);
 
 // pthread_create entry point. arg must be a struct thread_data * (owned by
