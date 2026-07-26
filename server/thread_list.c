@@ -25,7 +25,7 @@ void thread_list_join(struct thread_list *head, bool force_join) {
             if (cur->client->is_complete) {
                 pthread_join(cur->client->thread_id, NULL);
                 SLIST_REMOVE(head, cur, thread_node, next_node);
-                free(cur->client);
+                thread_data_destroy(cur->client);
                 free(cur);
             }
         }
@@ -34,7 +34,7 @@ void thread_list_join(struct thread_list *head, bool force_join) {
         SLIST_FOREACH_SAFE(cur, head, next_node, tmp) {
             pthread_join(cur->client->thread_id, NULL);
             SLIST_REMOVE(head, cur, thread_node, next_node);
-            free(cur->client);
+            thread_data_destroy(cur->client);
             free(cur);
         }
     }

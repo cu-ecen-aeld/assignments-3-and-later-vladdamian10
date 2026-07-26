@@ -15,6 +15,13 @@ struct thread_data *thread_data_create(int socket_fd, int file_fd, pthread_mutex
     return td;
 }
 
+void thread_data_destroy(struct thread_data *td) {
+    if (td != NULL) {
+        free(td);
+    }
+    td = NULL;
+}
+
 void *process_connection(void *arg) {
     struct thread_data *td = (struct thread_data *)arg;
 
