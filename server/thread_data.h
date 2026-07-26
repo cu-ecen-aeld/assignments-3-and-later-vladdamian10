@@ -36,4 +36,10 @@ void client_data_destroy(struct client_data *td);
 // marks is_complete so the caller can join and free it.
 void *process_connection(void *arg);
 
+// Creates a client_data and spawns a thread running process_connection on it.
+struct client_data *client_thread_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex);
+
+// Joins the thread started by client_thread_create() and frees client.
+void client_thread_destroy(struct client_data *client);
+
 #endif

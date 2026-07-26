@@ -48,3 +48,25 @@ void *process_connection(void *arg) {
 
     return NULL;
 }
+
+struct client_data *client_thread_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
+    struct client_data *client = client_data_create(socket_fd, file_fd, file_mutex);
+    if (client == NULL) {
+        return NULL;
+    }
+
+    if (pthread_create(&client->td.thread_id, NULL, process_connection, client) != 0) {
+        // thread never started, so it will never reach the close(socket_fd)
+        // in process_connection - close it here instead.
+        close(socket_fd);
+        client_data_destroy(client);
+        return NULL;
+    }
+
+    return client;
+}
+
+void client_thread_destroy(struct client_data *client) {
+    pthread_join(client->td.thread_id, NULL);
+    client_data_destroy(client);
+}
