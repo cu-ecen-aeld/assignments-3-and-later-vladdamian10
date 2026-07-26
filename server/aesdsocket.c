@@ -144,8 +144,16 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            if (thread_list_spawn(&threads, new_sockfd, fd, &file_mutex) != 0) {
-                perror("thread_list_spawn");
+            struct client_data *td = client_thread_create(new_sockfd, fd, &file_mutex);
+            if (td == NULL) {
+                perror("client_thread_create");
+                break;
+            }
+            if (thread_list_add(&threads, td) != 0) {
+                // thread is already running; join it before dropping td, otherwise
+                // it and its socket would be leaked.
+                perror("thread_list_add");
+                client_thread_destroy(td);
                 break;
             }
 
