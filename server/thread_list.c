@@ -20,7 +20,7 @@ int thread_list_add(struct thread_list *head, struct client_data *td) {
 }
 
 int thread_list_spawn(struct thread_list *head, int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
-    struct client_data *td = thread_data_create(socket_fd, file_fd, file_mutex);
+    struct client_data *td = client_data_create(socket_fd, file_fd, file_mutex);
     if (td == NULL) {
         return -1;
     }
@@ -29,7 +29,7 @@ int thread_list_spawn(struct thread_list *head, int socket_fd, int file_fd, pthr
         // thread never started, so it will never reach the close(socket_fd)
         // in process_connection - close it here instead.
         close(socket_fd);
-        thread_data_destroy(td);
+        client_data_destroy(td);
         return -1;
     }
 
@@ -37,7 +37,7 @@ int thread_list_spawn(struct thread_list *head, int socket_fd, int file_fd, pthr
         // thread is already running; join it before dropping td, otherwise
         // it and its socket would be leaked.
         pthread_join(td->thread_id, NULL);
-        thread_data_destroy(td);
+        client_data_destroy(td);
         return -1;
     }
 
@@ -51,7 +51,7 @@ void thread_list_join(struct thread_list *head, bool force_join) {
             if (cur->client->is_complete) {
                 pthread_join(cur->client->thread_id, NULL);
                 SLIST_REMOVE(head, cur, thread_node, next_node);
-                thread_data_destroy(cur->client);
+                client_data_destroy(cur->client);
                 free(cur);
             }
         }
@@ -60,7 +60,7 @@ void thread_list_join(struct thread_list *head, bool force_join) {
         SLIST_FOREACH_SAFE(cur, head, next_node, tmp) {
             pthread_join(cur->client->thread_id, NULL);
             SLIST_REMOVE(head, cur, thread_node, next_node);
-            thread_data_destroy(cur->client);
+            client_data_destroy(cur->client);
             free(cur);
         }
     }

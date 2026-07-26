@@ -3,7 +3,7 @@
 #include "thread_data.h"
 #include "connection_handler.h"
 
-struct client_data *thread_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
+struct client_data *client_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
     struct client_data *td = malloc(sizeof(*td));
     if (td == NULL) {
         return NULL;
@@ -15,7 +15,7 @@ struct client_data *thread_data_create(int socket_fd, int file_fd, pthread_mutex
     return td;
 }
 
-void thread_data_destroy(struct client_data *td) {
+void client_data_destroy(struct client_data *td) {
     if (td != NULL) {
         free(td);
     }
