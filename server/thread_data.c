@@ -4,31 +4,31 @@
 #include "connection_handler.h"
 
 struct client_data *client_data_create(int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
-    struct client_data *td = malloc(sizeof(*td));
-    if (td == NULL) {
+    struct client_data *client = malloc(sizeof(*client));
+    if (client == NULL) {
         return NULL;
     }
-    td->socket_fd = socket_fd;
-    td->td.file_fd = file_fd;
-    td->td.file_mutex = file_mutex;
-    td->is_complete = false;
-    return td;
+    client->socket_fd = socket_fd;
+    client->td.file_fd = file_fd;
+    client->td.file_mutex = file_mutex;
+    client->is_complete = false;
+    return client;
 }
 
-void client_data_destroy(struct client_data *td) {
-    if (td != NULL) {
-        free(td);
+void client_data_destroy(struct client_data *client) {
+    if (client != NULL) {
+        free(client);
     }
-    td = NULL;
+    client = NULL;
 }
 
 void *process_connection(void *arg) {
-    struct client_data *td = (struct client_data *)arg;
+    struct client_data *client = (struct client_data *)arg;
 
-    handle_connection(td->socket_fd, td->td.file_fd, td->td.file_mutex);
+    handle_connection(client->socket_fd, client->td.file_fd, client->td.file_mutex);
 
-    close(td->socket_fd);
-    td->is_complete = true;
+    close(client->socket_fd);
+    client->is_complete = true;
 
     return NULL;
 }
