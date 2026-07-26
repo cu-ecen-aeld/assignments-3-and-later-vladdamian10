@@ -13,4 +13,9 @@ struct thread_data {
     bool is_complete;
 };
 
+// pthread_create entry point. arg must be a struct thread_data * (owned by
+// the caller). Runs handle_connection to completion, closes socket_fd, then
+// marks is_complete so the caller can join and free it.
+void *process_connection(void *arg);
+
 #endif
