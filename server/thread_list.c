@@ -1,7 +1,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/queue.h>
 #include "thread_list.h"
+
+// ATTN! Copied the macro definition of SLIST_FOREACH_SAFE directly,
+// to avoid having a dependency to libbsd-dev (i.e. bsd/sys/queue.h)
+// This also simplifies native compilation on QEMU.
+
+/* Define SLIST_FOREACH_SAFE if not available (Linux) */
+#ifndef SLIST_FOREACH_SAFE
+#define SLIST_FOREACH_SAFE(var, head, field, tvar)         \
+    for ((var) = SLIST_FIRST((head));                       \
+         (var) && ((tvar) = SLIST_NEXT((var), field), 1);   \
+         (var) = (tvar))
+#endif
 
 void thread_list_init(struct thread_list *head) {
     SLIST_INIT(head);
