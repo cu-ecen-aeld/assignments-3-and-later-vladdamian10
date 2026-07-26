@@ -18,7 +18,8 @@
 #include "sigaction.h"
 #include "socket_utils.h"
 #include "daemon.h"
-#include "connection_handler.h"
+#include "thread_data.h"
+#include "thread_list.h"
 
 #define PORT_NO "9000"
 #define BACKLOG 10
@@ -31,6 +32,9 @@ int main(int argc, char *argv[]) {
     int fd;
     // guards writes/reads to fd, which will be shared across per-connection threads.
     pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
+    // tracks one thread_node per in-flight/unreaped connection thread.
+    struct thread_list threads;
+    thread_list_init(&threads);
     // socket related data
     int sockfd, new_sockfd;
     struct sockaddr_storage their_addr;
@@ -132,18 +136,17 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            handle_connection(new_sockfd, fd, &file_mutex);
-
-            /* close the new socket for this connection */
-            if (close(new_sockfd) == -1) {
-                perror("close socket");
+            if (thread_list_spawn(&threads, new_sockfd, fd, &file_mutex) != 0) {
+                perror("thread_list_spawn");
                 break;
             }
-            else {
-                // g. Logs message to the syslog “Closed connection from XXX” where XXX is the IP address of the connected client.
-                log_client_addr(&their_addr, "Closed");
-            }
+
+            // de-allocates threads that already finished.
+            thread_list_join(&threads, false);
     }
+
+    // wait for every thread to notice the shutdown signal and finish.
+    thread_list_join(&threads, true);
 
     // i. Logs message to the syslog “Caught signal, exiting” when SIGINT or SIGTERM is received.
     log_sigaction();
