@@ -19,6 +19,6 @@ struct thread_data *timestamp_thread_create(int file_fd, pthread_mutex_t *file_m
 // Joins the thread started by timestamp_thread_create() and frees td.
 // Caller must have already requested a stop (e.g. via caught_sigint/
 // caught_sigterm) so the thread actually returns.
-void timestamp_thread_join(struct thread_data *td);
+void timestamp_thread_destroy(struct thread_data *td);
 
 #endif

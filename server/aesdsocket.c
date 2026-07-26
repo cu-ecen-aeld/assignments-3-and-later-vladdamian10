@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
     // wait for every thread to notice the shutdown signal and finish.
     thread_list_join(&threads, true);
 
-    timestamp_thread_join(timestamp_td);
+    timestamp_thread_destroy(timestamp_td);
 
     // i. Logs message to the syslog “Caught signal, exiting” when SIGINT or SIGTERM is received.
     log_sigaction();

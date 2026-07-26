@@ -51,7 +51,7 @@ struct thread_data *timestamp_thread_create(int file_fd, pthread_mutex_t *file_m
     return td;
 }
 
-void timestamp_thread_join(struct thread_data *td) {
+void timestamp_thread_destroy(struct thread_data *td) {
     pthread_join(td->thread_id, NULL);
     thread_data_destroy(td);
 }
