@@ -4,6 +4,14 @@
 #include <pthread.h>
 #include <stdbool.h>
 
+// This structure contains the data that is concurrently
+// used by the clients.
+struct thread_data {
+    pthread_t thread_id;    
+    int file_fd;
+    pthread_mutex_t *file_mutex;
+};
+
 // Per-connection data passed into a thread.
 struct client_data {
     pthread_t thread_id;
