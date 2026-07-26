@@ -14,10 +14,8 @@ struct thread_data {
 
 // Per-connection data passed into a thread.
 struct client_data {
-    pthread_t thread_id;
+    struct thread_data td;
     int socket_fd;
-    int file_fd;
-    pthread_mutex_t *file_mutex;
     bool is_complete;
 };
 

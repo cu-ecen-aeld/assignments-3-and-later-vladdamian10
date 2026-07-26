@@ -9,8 +9,8 @@ struct client_data *client_data_create(int socket_fd, int file_fd, pthread_mutex
         return NULL;
     }
     td->socket_fd = socket_fd;
-    td->file_fd = file_fd;
-    td->file_mutex = file_mutex;
+    td->td.file_fd = file_fd;
+    td->td.file_mutex = file_mutex;
     td->is_complete = false;
     return td;
 }
@@ -25,7 +25,7 @@ void client_data_destroy(struct client_data *td) {
 void *process_connection(void *arg) {
     struct client_data *td = (struct client_data *)arg;
 
-    handle_connection(td->socket_fd, td->file_fd, td->file_mutex);
+    handle_connection(td->socket_fd, td->td.file_fd, td->td.file_mutex);
 
     close(td->socket_fd);
     td->is_complete = true;
