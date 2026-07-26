@@ -8,7 +8,7 @@
 
 // Node wrapping a thread_data pointer for SLIST tracking.
 struct thread_node {
-    struct thread_data *client;
+    struct client_data *client;
     SLIST_ENTRY(thread_node) next_node;
 };
 
@@ -18,7 +18,7 @@ void thread_list_init(struct thread_list *head);
 
 // Wraps td in a new thread_node and inserts it at the head of the list.
 // Returns 0 on success, -1 on allocation failure.
-int thread_list_add(struct thread_list *head, struct thread_data *td);
+int thread_list_add(struct thread_list *head, struct client_data *td);
 
 // Creates a thread_data, spawns a thread running process_connection on it,
 // and registers it in head.

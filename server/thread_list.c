@@ -7,7 +7,7 @@ void thread_list_init(struct thread_list *head) {
     SLIST_INIT(head);
 }
 
-int thread_list_add(struct thread_list *head, struct thread_data *td) {
+int thread_list_add(struct thread_list *head, struct client_data *td) {
     struct thread_node *node = malloc(sizeof(struct thread_node));
     if (node == NULL) {
         return -1;
@@ -20,7 +20,7 @@ int thread_list_add(struct thread_list *head, struct thread_data *td) {
 }
 
 int thread_list_spawn(struct thread_list *head, int socket_fd, int file_fd, pthread_mutex_t *file_mutex) {
-    struct thread_data *td = thread_data_create(socket_fd, file_fd, file_mutex);
+    struct client_data *td = thread_data_create(socket_fd, file_fd, file_mutex);
     if (td == NULL) {
         return -1;
     }
