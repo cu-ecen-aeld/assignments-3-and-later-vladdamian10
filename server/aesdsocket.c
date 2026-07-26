@@ -14,10 +14,14 @@
 #include <netinet/in.h>
 #include<arpa/inet.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include "sigaction.h"
 #include "socket_utils.h"
 #include "daemon.h"
-#include "connection_handler.h"
+#include "thread_data.h"
+#include "thread_list.h"
+#include "timestamp_thread.h"
+#include "thread_client.h"
 
 #define PORT_NO "9000"
 #define BACKLOG 10
@@ -28,6 +32,11 @@ int main(int argc, char *argv[]) {
     // file related data
     char *filename = "/var/tmp/aesdsocketdata";
     int fd;
+    // guards writes/reads to fd, which will be shared across per-connection threads.
+    pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
+    // tracks one thread_node per in-flight/unreaped connection thread.
+    struct thread_list threads;
+    thread_list_init(&threads);
     // socket related data
     int sockfd, new_sockfd;
     struct sockaddr_storage their_addr;
@@ -102,6 +111,13 @@ int main(int argc, char *argv[]) {
     // log to message to syslog
     openlog(NULL, 0, LOG_USER);
 
+    // Start a thread whcih writes a timestamp to the file pointed to by the 'fd'.
+    struct thread_data *timestamp_td = timestamp_thread_create(fd, &file_mutex);
+    if (timestamp_td == NULL) {
+        perror("timestamp_thread_create");
+        return -1;
+    }
+
     printf("Waiting forever for a signal\n");
     // h. Restarts accepting connections from new clients forever in a loop until SIGINT or SIGTERM is received.
     while(!(caught_sigint || caught_sigterm)) {
@@ -129,18 +145,27 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
-            handle_connection(new_sockfd, fd);
-
-            /* close the new socket for this connection */
-            if (close(new_sockfd) == -1) {
-                perror("close socket");
+            struct client_data *td = client_thread_create(new_sockfd, fd, &file_mutex);
+            if (td == NULL) {
+                perror("client_thread_create");
                 break;
             }
-            else {
-                // g. Logs message to the syslog “Closed connection from XXX” where XXX is the IP address of the connected client.
-                log_client_addr(&their_addr, "Closed");
+            if (thread_list_add(&threads, td) != 0) {
+                // thread is already running; join it before dropping td, otherwise
+                // it and its socket would be leaked.
+                perror("thread_list_add");
+                client_thread_destroy(td);
+                break;
             }
+
+            // de-allocates threads that already finished.
+            thread_list_join(&threads, false);
     }
+
+    // wait for every thread to notice the shutdown signal and finish.
+    thread_list_join(&threads, true);
+
+    timestamp_thread_destroy(timestamp_td);
 
     // i. Logs message to the syslog “Caught signal, exiting” when SIGINT or SIGTERM is received.
     log_sigaction();

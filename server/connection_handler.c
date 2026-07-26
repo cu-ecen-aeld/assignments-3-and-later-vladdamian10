@@ -11,7 +11,7 @@
 // Number of bytes used to store the data sent from remote, via sockets
 #define BUFF_LEN_BYTES 8194*4
 
-int handle_connection(int new_sockfd, int fd) {
+int handle_connection(int new_sockfd, int fd, pthread_mutex_t *file_mutex) {
     size_t buf_len = BUFF_LEN_BYTES;
     char* writestr = (char*)malloc(buf_len); // used to write bytes to file
     char* readstr = (char*)malloc(buf_len); // used to read bytes from file
@@ -50,6 +50,7 @@ int handle_connection(int new_sockfd, int fd) {
         // e. use a newline to separate data packets received.
         if (writestr[nb_rcvd-1] == '\n') {
                 // e. each newline should result in an append to the /var/tmp/aesdsocketdata file
+                pthread_mutex_lock(file_mutex);
                 if (write(fd, writestr, nb_rcvd) == -1) {
                     perror("write");
                     do_serve = false;
@@ -57,6 +58,7 @@ int handle_connection(int new_sockfd, int fd) {
                 } else {
                     is_packet_received = true;
                 }
+                pthread_mutex_unlock(file_mutex);
                 // always reset buffer before reading again.
                 memset(writestr, 0, buf_len);
                 // reset the offset of received bytes.
@@ -66,6 +68,7 @@ int handle_connection(int new_sockfd, int fd) {
         // f. Returns the full content of /var/tmp/aesdsocketdata to the client as soon as
         //  the received data packet completes.
         if (is_packet_received) {
+                    pthread_mutex_lock(file_mutex);
                     lseek(fd, 0, SEEK_SET);
 
                     while ((nb_read = read(fd, readstr, buf_len)) > 0) {
@@ -75,6 +78,7 @@ int handle_connection(int new_sockfd, int fd) {
                                 break;
                             }
                     }
+                    pthread_mutex_unlock(file_mutex);
                     if (nb_read == -1) {
                         perror("read");
                         do_serve = false;
