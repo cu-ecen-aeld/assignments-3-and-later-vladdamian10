@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
 
     // bind
     if (bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
-        close(sockfd);
         perror("bind");
+        close(sockfd);
         return -1;
     }
 
@@ -111,12 +111,19 @@ int main(int argc, char *argv[]) {
     // log to message to syslog
     openlog(NULL, 0, LOG_USER);
 
+    // Block SIGINT/SIGTERM before spawning the timestamp thread.
+    sigset_t old_mask;
+    block_termination_signals(&old_mask);
+
     // Start a thread whcih writes a timestamp to the file pointed to by the 'fd'.
     struct thread_data *timestamp_td = timestamp_thread_create(fd, &file_mutex);
     if (timestamp_td == NULL) {
         perror("timestamp_thread_create");
         return -1;
     }
+
+    // Only the main thread should be interruptible from here on.
+    restore_signal_mask(&old_mask);
 
     printf("Waiting forever for a signal\n");
     // h. Restarts accepting connections from new clients forever in a loop until SIGINT or SIGTERM is received.
@@ -145,11 +152,15 @@ int main(int argc, char *argv[]) {
                 break;
             }
 
+            // Block SIGINT/SIGTERM before spawning the client threads.
+            block_termination_signals(&old_mask);
             struct client_data *td = client_thread_create(new_sockfd, fd, &file_mutex);
             if (td == NULL) {
                 perror("client_thread_create");
                 break;
             }
+            restore_signal_mask(&old_mask);
+
             if (thread_list_add(&threads, td) != 0) {
                 // thread is already running; join it before dropping td, otherwise
                 // it and its socket would be leaked.

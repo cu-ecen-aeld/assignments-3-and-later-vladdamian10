@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 #include "errno.h"
 #include "sigaction.h"
 
@@ -55,4 +56,16 @@ int create_sigaction(struct sigaction* action) {
     register_sigaction(action);
 
     return 0;
+}
+
+void block_termination_signals(sigset_t *old_set) {
+    sigset_t block_set;
+    sigemptyset(&block_set);
+    sigaddset(&block_set, SIGINT);
+    sigaddset(&block_set, SIGTERM);
+    pthread_sigmask(SIG_BLOCK, &block_set, old_set);
+}
+
+void restore_signal_mask(const sigset_t *old_set) {
+    pthread_sigmask(SIG_SETMASK, old_set, NULL);
 }
