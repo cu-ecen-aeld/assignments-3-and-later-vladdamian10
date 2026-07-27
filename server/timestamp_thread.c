@@ -8,21 +8,23 @@
 #define TIMESTAMP_PERIOD_SECONDS 10
 #define TIMESTAMP_BUF_LEN 64
 
+// Poll on a short interval so shutdown (e.g. caught_sigint || caught_sigterm) stays responsive.
+#define POLL_INTERVAL_USEC 100000
+
 void *timestamp_entry(void *arg) {
     struct thread_data *td = (struct thread_data *)arg;
     char timestamp[TIMESTAMP_BUF_LEN];
-    time_t elapsed_seconds = 0;
+    useconds_t elapsed_usec = 0;
     time_t now;
     struct tm tm_now;
 
     while (!(caught_sigint || caught_sigterm)) {
-        sleep(1);
-        // Poll the shutdown flags roughly once a second, but only append a
-        // timestamp every TIMESTAMP_PERIOD_SECONDS, so shutdown stays responsive.
-        if (++elapsed_seconds < TIMESTAMP_PERIOD_SECONDS) {
+        usleep(POLL_INTERVAL_USEC);
+        elapsed_usec += POLL_INTERVAL_USEC;
+        if (elapsed_usec < TIMESTAMP_PERIOD_SECONDS * 1000000u) {
             continue;
         }
-        elapsed_seconds = 0;
+        elapsed_usec = 0;
 
         now = time(NULL);
         localtime_r(&now, &tm_now);
