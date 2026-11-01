@@ -12,6 +12,7 @@
 #include <linux/string.h>
 #else
 #include <string.h>
+#include <stdio.h>
 #endif
 
 #include "aesd-circular-buffer.h"
@@ -47,6 +48,35 @@ void aesd_circular_buffer_add_entry(struct aesd_circular_buffer *buffer, const s
     /**
     * TODO: implement per description
     */
+    if (buffer && add_entry) {
+        if (buffer->full) {
+            buffer->out_offs =
+                (buffer->out_offs + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+        }
+        // copy the whole struct to the buffer.
+        // the important data is inside the buffer.
+        uint8_t inp = buffer->in_offs;
+        memcpy(
+            (&buffer->entry[inp]),
+            add_entry, sizeof(struct aesd_buffer_entry)
+        );
+
+        buffer->in_offs = (buffer->in_offs + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+
+        if (buffer->in_offs == buffer->out_offs) {
+            buffer->full = true;
+        }
+    }
+    else {
+#if !defined(__KERNEL__)
+        if (!buffer) {
+            printf("buffer is NULL.\n");
+        }
+        if (!add_entry) {
+            printf("add_entry is NULL.\n");
+        }
+#endif
+    }
 }
 
 /**
