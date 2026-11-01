@@ -33,7 +33,62 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
     /**
     * TODO: implement per description
     */
-    return NULL;
+    /* Condition for buffer empty. */
+    if (!buffer->full && buffer->in_offs == buffer->out_offs) {
+#if !defined(__KERNEL__)
+        printf("The buffer is empty. Cannot read.\n");
+#endif
+        return NULL;
+    }
+
+    /* How many elements are not read, yet? */
+    unsigned int num_avail_elem = buffer->full ? \
+        AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : \
+      ((AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED + buffer->in_offs - buffer->out_offs)% \
+        AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED);
+
+
+    /* Check in all the available elements the char_offset to read from. */
+    size_t total_entry_size = 0;
+    size_t curr_entry_size = 0;
+    /* Save the start read pntr local. If char_offset is valid,
+    * the buffer->out_offs will be updated back with this value. */
+    unsigned int entry_idx = buffer->out_offs;
+
+    while(num_avail_elem) {
+        curr_entry_size = buffer->entry[entry_idx].size;
+        total_entry_size += curr_entry_size;
+
+        if (char_offset >= total_entry_size) {
+            /* go to the next element */
+            entry_idx = (entry_idx + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+            --num_avail_elem;
+            continue;
+        }
+        break;
+    };
+
+    if (!num_avail_elem) {
+        /* All elements were checked. But the 'char_offset' goes
+        * beyond the size of the written entries in the buffer. */
+        return NULL;
+    } else {
+        /* Set the read ptr to the found entry.*/
+        buffer->out_offs = entry_idx;
+
+        /* Since elements were read already, the buffer cannot be full anymore.
+        * However, to reset the flag is not quite safe.
+        */
+        buffer->full = false;
+
+        /* Calculate relative index in the current frame. This is where the searched
+        * character is located.*/
+        unsigned int rel_idx = char_offset - (total_entry_size - curr_entry_size);
+        *entry_offset_byte_rtn = (size_t)rel_idx;
+
+        /* Return the address of the entry.*/
+        return &(buffer->entry[buffer->out_offs]);
+    }
 }
 
 /**
