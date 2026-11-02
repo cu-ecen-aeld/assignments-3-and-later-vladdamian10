@@ -59,9 +59,22 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         curr_entry_size = buffer->entry[entry_idx].size;
         total_entry_size += curr_entry_size;
 
+#if !defined(__KERNEL__)
+        printf("num_avail_elem = %d\n", num_avail_elem);
+        printf("char_offset = %lu\n", char_offset);
+        printf("curr_entry_size = %lu\n", curr_entry_size);
+        printf("total_entry_size = %lu\n", total_entry_size);
+        printf("\n");
+#endif
+
         if (char_offset >= total_entry_size) {
             /* go to the next element */
             entry_idx = (entry_idx + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+            /* Since elements were read already, the buffer cannot be full anymore.
+            * However, to reset the flag is not quite safe.
+            */
+            buffer->full = false;
+
             --num_avail_elem;
             continue;
         }
