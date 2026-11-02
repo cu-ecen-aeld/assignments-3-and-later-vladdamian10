@@ -33,6 +33,18 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
     /**
     * TODO: implement per description
     */
+#if !defined(__KERNEL__)
+        printf("aesd_circular_buffer_find_entry_offset_for_fpos()\n");
+        printf("char_offset = %lu\n", char_offset);
+        printf("buffer->in_offs = %d\n", buffer->in_offs);
+        printf("buffer->out_offs = %d\n", buffer->out_offs);
+        printf("buffer->entry[%d].size  = %lu\n", buffer->out_offs, buffer->entry[buffer->out_offs].size);
+        for (int z=0; z<buffer->entry[buffer->out_offs].size; z++) {
+            printf("\%c", buffer->entry[buffer->out_offs].buffptr[z]);
+        }
+        printf("buffer->full = %d\n", buffer->full);
+        printf("\n");
+#endif
     /* Condition for buffer empty. */
     if (!buffer->full && buffer->in_offs == buffer->out_offs) {
 #if !defined(__KERNEL__)
@@ -46,7 +58,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : \
       ((AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED + buffer->in_offs - buffer->out_offs)% \
         AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED);
-
+    unsigned int dbg_avail_elem = num_avail_elem;
 
     /* Check in all the available elements the char_offset to read from. */
     size_t total_entry_size = 0;
@@ -86,18 +98,24 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         * beyond the size of the written entries in the buffer. */
         return NULL;
     } else {
+#if !defined(__KERNEL__)
+        printf("The char_offset = %lu consumed %d elements \n", char_offset, dbg_avail_elem - num_avail_elem + 1);
+#endif
         /* Set the read ptr to the found entry.*/
-        buffer->out_offs = entry_idx;
-
-        /* Since elements were read already, the buffer cannot be full anymore.
-        * However, to reset the flag is not quite safe.
-        */
-        buffer->full = false;
+        buffer->out_offs = entry_idx; //(entry_idx + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;;
 
         /* Calculate relative index in the current frame. This is where the searched
         * character is located.*/
         unsigned int rel_idx = char_offset - (total_entry_size - curr_entry_size);
         *entry_offset_byte_rtn = (size_t)rel_idx;
+
+#if !defined(__KERNEL__)
+        printf("new position: buffer->out_offs = %d\n", buffer->out_offs);
+        printf("buffer->full = %d\n", buffer->full);
+        printf("Returning &buffer->entry[%d]\n", entry_idx);
+        printf("rel_idx = %d\n", rel_idx);
+        printf("\n");
+#endif
 
         /* Return the address of the entry.*/
         return &(buffer->entry[buffer->out_offs]);
