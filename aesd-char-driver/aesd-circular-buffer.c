@@ -17,6 +17,8 @@
 
 #include "aesd-circular-buffer.h"
 
+#define DO_DBG 0
+
 /**
  * @param buffer the buffer to search for corresponding offset.  Any necessary locking must be performed by caller.
  * @param char_offset the position to search for in the buffer list, describing the zero referenced
@@ -33,7 +35,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
     /**
     * TODO: implement per description
     */
-#if !defined(__KERNEL__)
+#if !defined(__KERNEL__) && DO_DBG
         printf("aesd_circular_buffer_find_entry_offset_for_fpos()\n");
         printf("char_offset = %lu\n", char_offset);
         printf("buffer->in_offs = %d\n", buffer->in_offs);
@@ -47,7 +49,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
 #endif
     /* Condition for buffer empty. */
     if (!buffer->full && buffer->in_offs == buffer->out_offs) {
-#if !defined(__KERNEL__)
+#if !defined(__KERNEL__) && DO_DBG
         printf("The buffer is empty. Cannot read.\n");
 #endif
         return NULL;
@@ -71,7 +73,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         curr_entry_size = buffer->entry[entry_idx].size;
         total_entry_size += curr_entry_size;
 
-#if !defined(__KERNEL__)
+#if !defined(__KERNEL__) && DO_DBG
         printf("num_avail_elem = %d\n", num_avail_elem);
         printf("char_offset = %lu\n", char_offset);
         printf("curr_entry_size = %lu\n", curr_entry_size);
@@ -98,7 +100,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         * beyond the size of the written entries in the buffer. */
         return NULL;
     } else {
-#if !defined(__KERNEL__)
+#if !defined(__KERNEL__) && DO_DBG
         printf("The char_offset = %lu consumed %d elements \n", char_offset, dbg_avail_elem - num_avail_elem + 1);
 #endif
         /* Set the read ptr to the found entry.*/
@@ -109,7 +111,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         unsigned int rel_idx = char_offset - (total_entry_size - curr_entry_size);
         *entry_offset_byte_rtn = (size_t)rel_idx;
 
-#if !defined(__KERNEL__)
+#if !defined(__KERNEL__) && DO_DBG
         printf("new position: buffer->out_offs = %d\n", buffer->out_offs);
         printf("buffer->full = %d\n", buffer->full);
         printf("Returning &buffer->entry[%d]\n", entry_idx);
@@ -154,7 +156,7 @@ void aesd_circular_buffer_add_entry(struct aesd_circular_buffer *buffer, const s
         }
     }
     else {
-#if !defined(__KERNEL__)
+#if !defined(__KERNEL__) && DO_DBG
         if (!buffer) {
             printf("buffer is NULL.\n");
         }
