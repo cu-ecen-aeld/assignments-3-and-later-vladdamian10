@@ -60,8 +60,9 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED : \
       ((AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED + buffer->in_offs - buffer->out_offs)% \
         AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED);
+#if !defined(__KERNEL__) && DO_DBG
     unsigned int dbg_avail_elem = num_avail_elem;
-
+#endif
     /* Check in all the available elements the char_offset to read from. */
     size_t total_entry_size = 0;
     size_t curr_entry_size = 0;
