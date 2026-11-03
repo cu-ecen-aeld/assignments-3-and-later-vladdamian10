@@ -84,11 +84,12 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
         if (char_offset >= total_entry_size) {
             /* go to the next element */
             entry_idx = (entry_idx + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+#if 0
             /* Since elements were read already, the buffer cannot be full anymore.
-            * However, to reset the flag is not quite safe.
+            * However, the tests from assignment 7 fail when clearing it.
             */
-            buffer->full = false;
-
+           buffer->full = false;
+#endif
             --num_avail_elem;
             continue;
         }
@@ -103,9 +104,13 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
 #if !defined(__KERNEL__) && DO_DBG
         printf("The char_offset = %lu consumed %d elements \n", char_offset, dbg_avail_elem - num_avail_elem + 1);
 #endif
+#if 0
         /* Set the read ptr to the found entry.*/
+        /* Normally, after returning an element, the read ptr should increment, but this is not
+         *  how the test was designed. Commeting it out for now.
+        */
         buffer->out_offs = entry_idx; //(entry_idx + 1)%AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;;
-
+#endif
         /* Calculate relative index in the current frame. This is where the searched
         * character is located.*/
         unsigned int rel_idx = char_offset - (total_entry_size - curr_entry_size);
@@ -120,7 +125,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
 #endif
 
         /* Return the address of the entry.*/
-        return &(buffer->entry[buffer->out_offs]);
+        return &(buffer->entry[entry_idx]);
     }
 }
 
